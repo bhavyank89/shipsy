@@ -1,8 +1,15 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { toast } from "react-toastify";
 
 const ShipsyLanding = () => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isLogin, setIsLogin] = useState(true);
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+
     // Animation variants
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -26,6 +33,56 @@ const ShipsyLanding = () => {
             }
         }
     };
+
+    const modalVariants = {
+        hidden: { opacity: 0, scale: 0.8 },
+        visible: {
+            opacity: 1,
+            scale: 1,
+            transition: { duration: 0.3, ease: "easeOut" }
+        },
+        exit: {
+            opacity: 0,
+            scale: 0.8,
+            transition: { duration: 0.2 }
+        }
+    };
+
+    const overlayVariants = {
+        hidden: { opacity: 0 },
+        visible: { opacity: 1 },
+        exit: { opacity: 0 }
+    };
+
+    const handleOpenModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+    };
+
+    const handleFormSubmit = (e) => {
+        e.preventDefault();
+
+        // Create FormData from the form event
+        const formData = new FormData(e.target);
+        const formValues = Object.fromEntries(formData.entries());
+
+        if (isLogin) {
+            console.log("Login form submitted:", formValues);
+            // TODO: Replace with actual login API call
+            toast.success(`Welcome back, ${formValues.username || "User"}!`);
+        } else {
+            console.log("Signup form submitted:", formValues);
+            // TODO: Replace with actual signup API call
+            toast.success(`Account created for ${formValues.username || "User"}!`);
+        }
+
+        // Close the modal after processing
+        handleCloseModal();
+    };
+
 
     return (
         <div className="min-h-screen text-white overflow-hidden relative">
@@ -102,12 +159,135 @@ const ShipsyLanding = () => {
                         className="relative bg-gradient-to-r from-orange-500 via-orange-600 to-red-500 text-white px-6 py-3 rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer border border-orange-400/20 overflow-hidden group"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
+                        onClick={handleOpenModal}
                     >
                         <span className="relative z-10">Login / Register</span>
                         <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </motion.button>
                 </motion.nav>
             </motion.div>
+
+            <AnimatePresence>
+                {isModalOpen && (
+                    <motion.div
+                        className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+                        variants={overlayVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                    >
+                        {/* Background Overlay */}
+                        <div
+                            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                            onClick={handleCloseModal}
+                        ></div>
+
+                        {/* Modal */}
+                        <motion.div
+                            className="relative w-full max-w-md glassmorphism rounded-3xl p-8 border border-white/20 shadow-2xl max-h-[90vh] overflow-y-auto"
+                            variants={modalVariants}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                        >
+                            {/* Close Button */}
+                            <button
+                                onClick={handleCloseModal}
+                                className="absolute top-4 right-4 text-gray-400 cursor-pointer hover:text-white transition-colors duration-200"
+                            >
+                                <svg
+                                    className="w-6 h-6"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M6 18L18 6M6 6l12 12"
+                                    />
+                                </svg>
+                            </button>
+
+                            {/* Header */}
+                            <div className="text-center mb-8">
+                                <h2 className="text-2xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent mb-2">
+                                    {isLogin ? "Welcome Back" : "Join Shipsy"}
+                                </h2>
+                                <p className="text-gray-400 text-sm">
+                                    {isLogin
+                                        ? "Sign in to your account"
+                                        : "Create your account"}
+                                </p>
+                            </div>
+
+                            {/* Toggle Buttons */}
+                            <div className="flex bg-slate-800/50 rounded-2xl p-1 mb-6">
+                                <button
+                                    onClick={() => setIsLogin(true)}
+                                    className={`flex-1 py-2 px-4 rounded-xl font-medium cursor-pointer transition-all duration-200 ${isLogin
+                                        ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg"
+                                        : "text-gray-400 hover:text-white"
+                                        }`}
+                                >
+                                    Login
+                                </button>
+                                <button
+                                    onClick={() => setIsLogin(false)}
+                                    className={`flex-1 py-2 px-4 rounded-xl font-medium cursor-pointer transition-all duration-200 ${!isLogin
+                                        ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg"
+                                        : "text-gray-400 hover:text-white"
+                                        }`}
+                                >
+                                    Sign Up
+                                </button>
+                            </div>
+
+                            {/* Form */}
+                            <form onSubmit={handleFormSubmit} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        User Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                        className="w-full px-4 py-3 bg-slate-800/50 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-white placeholder-gray-400"
+                                        placeholder="Enter your username"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                        Password
+                                    </label>
+                                    <input
+                                        type="password"
+                                        required
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full px-4 py-3 bg-slate-800/50 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-white placeholder-gray-400"
+                                        placeholder="Enter your password"
+                                    />
+                                </div>
+
+                                <motion.button
+                                    type="submit"
+                                    className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 rounded-xl font-bold shadow-lg hover:shadow-xl cursor-pointer transition-all duration-300 border border-orange-400/20"
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                >
+                                    {isLogin ? "Sign In" : "Create Account"}
+                                </motion.button>
+                            </form>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
 
             {/* Main Content */}
             <motion.main
@@ -244,7 +424,7 @@ const ShipsyLanding = () => {
                     </motion.button>
                     <div className="absolute inset-0 bg-orange-500/30 blur-2xl rounded-2xl -z-10"></div>
                 </motion.div>
-                
+
             </motion.section>
 
             {/* Enhanced Footer */}

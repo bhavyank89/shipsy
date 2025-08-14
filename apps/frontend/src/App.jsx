@@ -2,16 +2,54 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./App.css";
-import ShipsyLanding from './components/Landing'; // Corrected import
+import ShipsyLanding from './components/Landing';
 
 // Dummy pages
-const Login = () => <h1>Login</h1>;
-const Dashboard = () => <h1>Dashboard (Protected)</h1>;
+const Login = () => {
+  const handleLogin = () => {
+    // Example: after successful login
+    localStorage.setItem("token", "dummyToken");
+    toast.success("Login successful!");
+  };
 
-// Fake authentication hook (replace with real auth logic)
+  return (
+    <div>
+      <h1>Login</h1>
+      <button
+        onClick={handleLogin}
+        className="px-4 py-2 bg-blue-500 text-white rounded"
+      >
+        Simulate Login
+      </button>
+    </div>
+  );
+};
+
+const Dashboard = () => {
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    toast.info("Logged out!");
+  };
+
+  return (
+    <div>
+      <h1>Dashboard (Protected)</h1>
+      <button
+        onClick={handleLogout}
+        className="px-4 py-2 bg-red-500 text-white rounded"
+      >
+        Logout
+      </button>
+    </div>
+  );
+};
+
+// Fake authentication hook
 const useAuth = () => {
-  const token = localStorage.getItem("token"); // Example: store token after login
+  const token = localStorage.getItem("token");
   return !!token;
 };
 
@@ -93,6 +131,18 @@ export default function App() {
   return (
     <Router>
       <AnimatedRoutes />
+      {/* Toast Container at root level */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
     </Router>
   );
 }

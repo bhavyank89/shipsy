@@ -87,21 +87,6 @@ function AnimatedRoutes() {
             </motion.div>
           }
         />
-        <Route
-          path="/login"
-          element={
-            <motion.div
-              variants={pageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={{ duration: 0.3 }}
-            >
-              <Login />
-            </motion.div>
-          }
-        />
-
         {/* Protected Routes */}
         <Route
           path="/dashboard"

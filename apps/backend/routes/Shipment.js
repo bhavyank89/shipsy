@@ -1,5 +1,6 @@
 import { Router } from "express";
 import Shipment from "../models/Shipment.js";
+import User from "../models/User.js";
 import auth from "../middleware/auth.js";
 
 const router = Router();
@@ -52,6 +53,26 @@ router.get("/", async (req, res) => {
             totalPages: Math.ceil(total / limit),
         });
     } catch (err) {
+        console.error("Error fetching shipments:", err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+/**
+ * ✅ GET /shipments/my
+ * Fetch all shipments created by the logged-in user
+ */
+router.get("/my", async (req, res) => {
+    try {
+        const shipments = await Shipment.find({ "createdBy._id": req.user.id })
+            .sort({ createdAt: -1 });
+
+        res.json({
+            data: shipments,
+            total: shipments.length
+        });
+    } catch (err) {
+        console.error("Error fetching user's shipments:", err);
         res.status(500).json({ message: err.message });
     }
 });
@@ -65,6 +86,7 @@ router.get("/:id", async (req, res) => {
         if (!shipment) return res.status(404).json({ message: "Shipment not found" });
         res.json(shipment);
     } catch (err) {
+        console.error("Error fetching shipment:", err);
         res.status(500).json({ message: err.message });
     }
 });
@@ -74,10 +96,21 @@ router.get("/:id", async (req, res) => {
  */
 router.post("/", async (req, res) => {
     try {
-        const shipment = new Shipment(req.body);
+        // Fetch logged-in user details for embedding
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        const shipment = new Shipment({
+            ...req.body,
+            createdBy: {
+                _id: user._id,
+                username: user.username
+            }
+        });
         await shipment.save();
         res.status(201).json(shipment);
     } catch (err) {
+        console.error("Error creating shipment:", err);
         res.status(400).json({ message: err.message });
     }
 });
@@ -90,12 +123,16 @@ router.patch("/:id", async (req, res) => {
         const shipment = await Shipment.findById(req.params.id);
         if (!shipment) return res.status(404).json({ message: "Shipment not found" });
 
-        Object.assign(shipment, req.body);
+        // Prevent overriding createdBy
+        const { createdBy, ...updateData } = req.body;
+        Object.assign(shipment, updateData);
+
         shipment.cost = shipment.weightKg * shipment.baseRate + shipment.distanceKm * 0.5;
 
         await shipment.save();
         res.json(shipment);
     } catch (err) {
+        console.error("Error updating shipment:", err);
         res.status(400).json({ message: err.message });
     }
 });
@@ -109,6 +146,7 @@ router.delete("/:id", async (req, res) => {
         if (!shipment) return res.status(404).json({ message: "Shipment not found" });
         res.json({ message: "Shipment deleted" });
     } catch (err) {
+        console.error("Error deleting shipment:", err);
         res.status(500).json({ message: err.message });
     }
 });

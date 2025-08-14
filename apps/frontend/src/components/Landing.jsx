@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 const ShipsyLanding = () => {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-
     // Animation variants
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -28,32 +27,25 @@ const ShipsyLanding = () => {
         }
     };
 
-    const cubeVariants = {
-        hidden: { scale: 0, rotateY: -180 },
-        visible: {
-            scale: 1,
-            rotateY: 0,
-            transition: {
-                duration: 1.2,
-                ease: "easeOut",
-                delay: 0.5
-            }
-        }
-    };
-
-    const floatingVariants = {
-        animate: {
-            y: [-10, 10, -10],
-            transition: {
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut"
-            }
-        }
-    };
-
     return (
-        <div className="min-h-screen text-white overflow-hidden bg-gradient-to-br from-gray-900 via-black to-gray-900">
+        <div className="min-h-screen text-white overflow-hidden relative">
+            {/* Modern Gradient Background with Mesh */}
+            <div className="fixed inset-0 -z-10">
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900"></div>
+                <div className="absolute inset-0 bg-gradient-to-tr from-orange-500/10 via-transparent to-blue-500/10"></div>
+                {/* Animated mesh gradient */}
+                <div className="absolute inset-0 opacity-30">
+                    <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+                    <div className="absolute top-0 -right-4 w-72 h-72 bg-orange-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+                    <div className="absolute -bottom-8 left-20 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
+                </div>
+                {/* Subtle grid pattern */}
+                <div className="absolute inset-0 opacity-[0.03]" style={{
+                    backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.8) 1px, transparent 0)',
+                    backgroundSize: '50px 50px'
+                }}></div>
+            </div>
+
             <style jsx>{`
                 @keyframes spin-slow {
                     from {
@@ -66,159 +58,141 @@ const ShipsyLanding = () => {
                 .animate-spin-slow {
                     animation: spin-slow 8s linear infinite;
                 }
+                .glassmorphism {
+                    background: rgba(255, 255, 255, 0.08);
+                    backdrop-filter: blur(20px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                }
             `}</style>
 
-            {/* Navigation - Minimal Modern Glass Navbar */}
-            <motion.div className="fixed top-0 left-0 w-full px-4 sm:px-6 lg:px-8 pt-4 z-50">
+            {/* Navigation - Enhanced Glass Navbar */}
+            <motion.div className="fixed top-0 left-0 w-full px-4 sm:px-6 lg:px-8 pt-6 z-50">
                 <motion.nav
-                    className="flex items-center justify-between px-6 py-3 rounded-2xl backdrop-blur-xl shadow-lg"
-                    initial={{ y: -20, opacity: 0 }}
+                    className="flex items-center justify-between px-8 py-4 rounded-3xl glassmorphism shadow-2xl border border-white/10"
+                    initial={{ y: -30, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.6 }}
-                    style={{
-                        backgroundColor: "rgba(255,255,255,0.06)",
-                        boxShadow: "0 4px 30px rgba(0, 0, 0, 0.15)"
-                    }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
                 >
                     {/* Left: Logo + Brand Name */}
                     <motion.div
-                        className="flex items-center gap-3"
+                        className="flex items-center gap-4"
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.2 }}
+                        transition={{ delay: 0.3, duration: 0.6 }}
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="27" fill="none"><path d="M 39.106 13.451 L 38.488 13.451 L 34.556 6.403 C 34.407 6.135 34.124 5.978 33.793 5.978 L 29.169 5.978 L 30.085 1.063 C 30.195 0.476 29.812 0 29.231 0 L 4.779 0.011 C 4.151 0.011 3.641 0.525 3.641 1.159 C 3.641 1.794 4.151 2.308 4.779 2.308 L 18.237 2.308 C 18.772 2.401 19.18 2.871 19.18 3.439 C 19.18 4.04 18.722 4.533 18.139 4.582 L 1.138 4.582 C 0.51 4.583 0 5.097 0 5.731 C 0 6.366 0.51 6.88 1.138 6.88 L 18.187 6.88 C 18.747 6.952 19.18 7.433 19.18 8.018 C 19.18 8.606 18.743 9.089 18.18 9.158 L 2.807 9.158 C 2.178 9.158 1.669 9.672 1.669 10.307 C 1.669 10.941 2.178 11.455 2.807 11.455 L 6.37 11.455 L 4.495 21.519 C 4.385 22.106 4.768 22.582 5.35 22.582 L 7.028 22.582 C 6.704 25.012 8.341 26.949 10.779 26.949 C 13.218 26.949 15.577 25.012 16.158 22.582 L 25.021 22.582 L 27.527 22.582 C 27.202 25.012 28.839 26.949 31.278 26.949 C 33.716 26.949 36.076 25.012 36.657 22.582 L 37.404 22.582 L 38.336 22.582 C 38.917 22.582 39.478 22.106 39.587 21.519 L 39.926 19.7 C 40.028 19.155 39.704 18.705 39.191 18.645 L 39.961 14.514 C 40.07 13.927 39.687 13.451 39.106 13.451 Z M 14.105 22.334 C 13.85 23.706 12.535 24.823 11.176 24.823 C 9.816 24.823 8.918 23.706 9.174 22.334 C 9.43 20.961 10.744 19.845 12.104 19.845 C 13.463 19.845 14.361 20.961 14.105 22.334 Z M 34.604 22.334 C 34.348 23.706 33.033 24.823 31.674 24.823 C 30.314 24.823 29.416 23.706 29.672 22.334 C 29.928 20.961 31.242 19.845 32.602 19.845 C 33.962 19.845 34.86 20.961 34.604 22.334 Z M 27.776 13.451 L 28.773 8.104 L 32.871 8.104 L 35.854 13.451 Z" fill="rgb(252, 76, 0)" stroke-width="0.34" stroke="rgba(0,0,0,1)" stroke-miterlimit="10"></path></svg>
-                        <span className="text-lg sm:text-xl font-extrabold tracking-wide bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
+                        <div className="relative">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="45" height="32" fill="none" className="drop-shadow-lg">
+                                <path d="M 39.106 13.451 L 38.488 13.451 L 34.556 6.403 C 34.407 6.135 34.124 5.978 33.793 5.978 L 29.169 5.978 L 30.085 1.063 C 30.195 0.476 29.812 0 29.231 0 L 4.779 0.011 C 4.151 0.011 3.641 0.525 3.641 1.159 C 3.641 1.794 4.151 2.308 4.779 2.308 L 18.237 2.308 C 18.772 2.401 19.18 2.871 19.18 3.439 C 19.18 4.04 18.722 4.533 18.139 4.582 L 1.138 4.582 C 0.51 4.583 0 5.097 0 5.731 C 0 6.366 0.51 6.88 1.138 6.88 L 18.187 6.88 C 18.747 6.952 19.18 7.433 19.18 8.018 C 19.18 8.606 18.743 9.089 18.18 9.158 L 2.807 9.158 C 2.178 9.158 1.669 9.672 1.669 10.307 C 1.669 10.941 2.178 11.455 2.807 11.455 L 6.37 11.455 L 4.495 21.519 C 4.385 22.106 4.768 22.582 5.35 22.582 L 7.028 22.582 C 6.704 25.012 8.341 26.949 10.779 26.949 C 13.218 26.949 15.577 25.012 16.158 22.582 L 25.021 22.582 L 27.527 22.582 C 27.202 25.012 28.839 26.949 31.278 26.949 C 33.716 26.949 36.076 25.012 36.657 22.582 L 37.404 22.582 L 38.336 22.582 C 38.917 22.582 39.478 22.106 39.587 21.519 L 39.926 19.7 C 40.028 19.155 39.704 18.705 39.191 18.645 L 39.961 14.514 C 40.07 13.927 39.687 13.451 39.106 13.451 Z M 14.105 22.334 C 13.85 23.706 12.535 24.823 11.176 24.823 C 9.816 24.823 8.918 23.706 9.174 22.334 C 9.43 20.961 10.744 19.845 12.104 19.845 C 13.463 19.845 14.361 20.961 14.105 22.334 Z M 34.604 22.334 C 34.348 23.706 33.033 24.823 31.674 24.823 C 30.314 24.823 29.416 23.706 29.672 22.334 C 29.928 20.961 31.242 19.845 32.602 19.845 C 33.962 19.845 34.86 20.961 34.604 22.334 Z M 27.776 13.451 L 28.773 8.104 L 32.871 8.104 L 35.854 13.451 Z" fill="url(#gradient)" stroke-width="0.34" stroke="rgba(0,0,0,0.3)" stroke-miterlimit="10" />
+                                <defs>
+                                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stopColor="#f97316" />
+                                        <stop offset="100%" stopColor="#ea580c" />
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            <div className="absolute inset-0 bg-orange-500/20 blur-lg rounded-full"></div>
+                        </div>
+                        <span className="text-xl sm:text-2xl font-black tracking-tight bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 bg-clip-text text-transparent drop-shadow-sm">
                             Shipsy
                         </span>
                     </motion.div>
 
-                    {/* Right: Login/Register Button */}
+                    {/* Right: Enhanced Login/Register Button */}
                     <motion.button
-                        className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-5 py-2 rounded-full font-semibold shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
-                        whileTap={{ scale: 0.96 }}
+                        className="relative bg-gradient-to-r from-orange-500 via-orange-600 to-red-500 text-white px-6 py-3 rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer border border-orange-400/20 overflow-hidden group"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                     >
-                        Login / Register
+                        <span className="relative z-10">Login / Register</span>
+                        <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </motion.button>
                 </motion.nav>
             </motion.div>
 
             {/* Main Content */}
             <motion.main
-                className="container mt-20 mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-20"
+                className="container mt-24 mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-20"
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
             >
-                <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center text-center lg:text-left">
+                <div className="grid lg:grid-cols-2 ml-10 gap-8 lg:gap-16 items-center text-center lg:text-left">
                     {/* Left Content */}
                     <motion.div
                         className="space-y-6 lg:space-y-8"
                         variants={itemVariants}
                     >
                         <motion.h1
-                            className="text-4xl sm:text-5xl lg:text-7xl font-bold leading-tight"
+                            className="text-4xl sm:text-5xl lg:text-6xl font-black leading-snug tracking-tight"
                             variants={itemVariants}
                         >
-                            We Ship It.
+                            <span className="bg-gradient-to-r from-orange-400 via-orange-500 to-red-500 bg-clip-text text-transparent drop-shadow-2xl">
+                                Your Products,
+                            </span>
                             <br />
                             <motion.span
-                                className="text-white"
+                                className="bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent drop-shadow-lg"
                                 initial={{ opacity: 0, x: -50 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 1, duration: 0.8 }}
                             >
-                                You Relax.
+                                Their Doorstep —
                             </motion.span>
+                            <br />
+                            <span className="bg-gradient-to-r from-orange-500 via-yellow-400 to-amber-400 bg-clip-text text-transparent drop-shadow-xl">
+                                Without the Stress.
+                            </span>
                         </motion.h1>
 
                         <motion.p
-                            className="text-gray-300 text-base sm:text-lg lg:text-xl max-w-md mx-auto lg:mx-0 leading-relaxed"
+                            className="text-gray-300 text-base sm:text-lg lg:text-xl max-w-lg mx-auto lg:mx-0 leading-relaxed font-light drop-shadow-sm"
                             variants={itemVariants}
                         >
-                            Say goodbye to logistics headaches, we'll get your products to your customers, hassle-free.
+                            Say goodbye to logistics headaches — we'll get your products to your customers, faster and safer than ever.
                         </motion.p>
-
-                        <motion.button
-                            className="bg-orange-500 text-white px-6 sm:px-8 py-3 rounded-full text-base sm:text-lg font-semibold hover:bg-orange-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-                            variants={itemVariants}
-                            whileHover={{
-                                scale: 1.05,
-                                boxShadow: "0 20px 25px -5px rgba(251, 146, 60, 0.3)"
-                            }}
-                            whileTap={{ scale: 0.95 }}
-                        >
-                            Book Now
-                        </motion.button>
                     </motion.div>
 
-                    {/* Right Content */}
-                    <motion.div
-                        className="relative flex justify-center items-center py-8 lg:py-0"
-                        variants={cubeVariants}
-                        animate="animate"
-                    >
-                        <motion.div
-                            className="relative"
-                            variants={floatingVariants}
-                            animate="animate"
-                        >
-                            {/* Isometric Grid */}
-                            <div className="grid grid-cols-4 gap-1 sm:gap-2 transform rotate-12 scale-90 sm:scale-110">
-                                {[...Array(16)].map((_, i) => (
-                                    <motion.div
-                                        key={i}
-                                        className="w-6 h-6 sm:w-8 sm:h-8 lg:w-12 lg:h-12 bg-gradient-to-br from-gray-200 to-gray-400 rounded shadow-lg"
-                                        style={{
-                                            transform: `perspective(400px) rotateX(45deg) rotateY(-45deg)`
-                                        }}
-                                        initial={{ scale: 0, rotateY: 180 }}
-                                        animate={{ scale: 1, rotateY: 0 }}
-                                        transition={{
-                                            delay: i * 0.05 + 0.8,
-                                            duration: 0.6,
-                                            ease: "easeOut"
-                                        }}
-                                        whileHover={{
-                                            scale: 1.1,
-                                            backgroundColor: "#f97316"
-                                        }}
-                                    />
-                                ))}
-                            </div>
-                        </motion.div>
-                    </motion.div>
+                    {/* Right Content - Enhanced 3D Visual */}
+                    <DotLottieReact
+                        src="https://lottie.host/33482210-a639-4817-9afa-c1c5b880efbb/WeWYdWS69p.lottie"
+                        loop
+                        autoplay
+                    />
                 </div>
 
-                {/* Testimonial */}
+                {/* Enhanced Testimonial */}
                 <motion.section
-                    className="mt-16 lg:mt-24 xl:mt-32 flex justify-center"
+                    className="mt-12 lg:mt-12 xl:mt-24 flex justify-center"
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 2.2, duration: 0.8 }}
                 >
-                    <div className="max-w-4xl w-full bg-[#1C1C1C] rounded-lg p-6 lg:p-8">
+                    <div className="max-w-5xl w-full glassmorphism rounded-3xl p-8 lg:p-12 border border-white/10 shadow-2xl">
                         <motion.div
-                            className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8 text-center lg:text-left"
+                            className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12 text-center lg:text-left"
                             whileHover={{ scale: 1.02 }}
                             transition={{ duration: 0.3 }}
                         >
-                            <div className="flex-shrink-0">
-                                <motion.h3
-                                    className="text-xl font-semibold text-orange-400"
-                                    whileHover={{ color: "#fb923c" }}
-                                >
-                                    Dean Kresh
-                                </motion.h3>
-                                <p className="text-gray-400">Manager at TechCo</p>
+                            <div className="flex-shrink-0 relative">
+                                <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500 blur-lg opacity-30 rounded-full"></div>
+                                <div className="relative bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-2xl border border-white/10">
+                                    <motion.h3
+                                        className="text-2xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent"
+                                        whileHover={{ scale: 1.05 }}
+                                    >
+                                        Dean Kresh
+                                    </motion.h3>
+                                    <p className="text-gray-400 font-medium">Manager at TechCo</p>
+                                </div>
                             </div>
 
                             <motion.blockquote
-                                className="text-gray-300 text-base sm:text-lg lg:text-xl italic leading-relaxed border-l-4 border-orange-500 pl-4 lg:pl-6"
+                                className="text-gray-200 text-lg sm:text-xl lg:text-2xl italic leading-relaxed border-l-4 border-gradient-to-b from-orange-500 to-red-500 pl-6 lg:pl-8 relative"
                                 initial={{ opacity: 0, x: -30 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 2.5, duration: 0.8 }}
                             >
+                                <div className="absolute -left-1 top-0 bottom-0 w-1 bg-gradient-to-b from-orange-500 to-red-500 rounded-full"></div>
                                 "Shipsy has transformed our logistics operations. Their real-time tracking and on-time deliveries have made a significant impact on our business. Highly recommended!"
                             </motion.blockquote>
                         </motion.div>
@@ -226,15 +200,15 @@ const ShipsyLanding = () => {
                 </motion.section>
             </motion.main>
 
-            {/* Bottom CTA */}
+            {/* Enhanced Bottom CTA */}
             <motion.section
-                className="text-center bg-[#1C1C1C] py-16 lg:py-20 px-4 sm:px-6 lg:px-8"
+                className="text-center glassmorphism mx-4 sm:mx-6 lg:mx-8 rounded-3xl py-20 lg:py-24 px-6 sm:px-8 lg:px-12 border border-white/10 shadow-2xl mb-8"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 3, duration: 1 }}
             >
                 <motion.h2
-                    className="text-3xl sm:text-4xl lg:text-6xl font-bold mb-4 lg:mb-6"
+                    className="text-4xl p-3 sm:text-5xl lg:text-7xl font-black mb-6 lg:mb-8 bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent"
                     initial={{ scale: 0.8 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: 3.2, duration: 0.8 }}
@@ -243,7 +217,7 @@ const ShipsyLanding = () => {
                 </motion.h2>
 
                 <motion.p
-                    className="text-gray-400 text-base sm:text-lg mb-6 lg:mb-8 max-w-2xl mx-auto"
+                    className="text-gray-300 text-xl sm:text-2xl mb-8 lg:mb-10 max-w-3xl mx-auto leading-relaxed"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 3.4, duration: 0.6 }}
@@ -251,37 +225,44 @@ const ShipsyLanding = () => {
                     This could be the start of something big.
                 </motion.p>
 
-                <motion.button
-                    className="bg-orange-500 text-white px-6 sm:px-8 py-3 rounded-full text-base sm:text-lg font-semibold hover:bg-orange-600 transition-all duration-300 shadow-lg hover:shadow-2xl"
+                <motion.div
+                    className="relative inline-block"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 3.6, duration: 0.6 }}
-                    whileHover={{
-                        scale: 1.05,
-                        boxShadow: "0 25px 50px -12px rgba(251, 146, 60, 0.25)"
-                    }}
-                    whileTap={{ scale: 0.95 }}
                 >
-                    Use this template
-                </motion.button>
+                    <motion.button
+                        className="relative bg-gradient-to-r from-orange-500 to-red-500 text-white px-10 sm:px-12 py-4 rounded-2xl text-lg sm:text-xl font-bold shadow-2xl transition-all duration-300 border cursor-pointer border-orange-400/20 overflow-hidden group"
+                        whileHover={{
+                            scale: 1.08,
+                            boxShadow: "0 30px 60px -12px rgba(251, 146, 60, 0.4)"
+                        }}
+                        whileTap={{ scale: 0.95 }}
+                    >
+                        <span className="relative z-10">Get Started</span>
+                        <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </motion.button>
+                    <div className="absolute inset-0 bg-orange-500/30 blur-2xl rounded-2xl -z-10"></div>
+                </motion.div>
+                
             </motion.section>
 
-            {/* Footer */}
+            {/* Enhanced Footer */}
             <motion.footer
-                className="bg-[#1C1C1C] py-6 lg:py-8 px-4 sm:px-6 lg:px-8 text-center lg:text-left"
+                className="glassmorphism mx-4 sm:mx-6 lg:mx-8 rounded-3xl py-8 lg:py-10 px-6 sm:px-8 lg:px-12 text-center lg:text-left border border-white/10 shadow-xl mb-6"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 3.8, duration: 0.6 }}
             >
-                <div className="flex flex-col lg:flex-row justify-between items-center gap-4 lg:gap-6">
-                    <div className="flex flex-wrap justify-center lg:justify-start gap-4 lg:gap-6 text-sm text-gray-400">
-                        <span>Made in France</span>
+                <div className="flex flex-col lg:flex-row justify-between items-center gap-6 lg:gap-8">
+                    <div className="flex flex-wrap justify-center lg:justify-start gap-6 lg:gap-8 text-sm text-gray-300">
+                        <span className="font-semibold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">Made in France</span>
                         {['Services', 'Benefits', 'Process', 'Plans', 'Contact'].map((item) => (
                             <motion.a
                                 key={item}
                                 href="#"
-                                className="hover:text-white transition-colors duration-300"
-                                whileHover={{ y: -1 }}
+                                className="hover:text-white transition-all duration-300 hover:scale-105 font-medium"
+                                whileHover={{ y: -2 }}
                             >
                                 {item}
                             </motion.a>
@@ -289,10 +270,10 @@ const ShipsyLanding = () => {
                     </div>
 
                     <motion.div
-                        className="text-sm text-gray-400"
+                        className="text-sm text-gray-300 font-medium"
                         whileHover={{ scale: 1.05 }}
                     >
-                        Created by <span className="text-white font-semibold">🚀Man</span>
+                        Created by <span className="bg-gradient-to-r from-white to-orange-400 bg-clip-text text-transparent font-bold">🚀Man</span>
                     </motion.div>
                 </div>
             </motion.footer>

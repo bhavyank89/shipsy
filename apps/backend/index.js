@@ -1,11 +1,31 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import connectToMongoDB from './config/db.js';
+import Home from './routes/Home.js';
+import Auth from './routes/Auth.js';
+import Shipment from './routes/Shipment.js';
+
 dotenv.config();
+
 const app = express();
+
+// ✅ Middleware to parse incoming JSON requests
+app.use(express.json());
+
 const port = process.env.PORT || 5000;
-app.use('/', (req, res) => {
-    res.send("Server Is Safe");
-})
-app.listen(port, () => {
-    console.log('server running at : ', `http://localhost:${port}/`);
+
+// Connect to the database and then start the server
+connectToMongoDB().then(() => {
+    app.use('/', Home);
+    app.use('/auth', Auth);
+    app.use('/shipment', Shipment);
+
+    app.listen(port, () => {
+        console.log(`✅ Server running at: http://localhost:${port}/`);
+    });
+}).catch((error) => {
+    app.get('*', (req, res) => {
+        res.send("☠️ Server is disconnected!!");
+        console.log("Server throwing error : ", error.message);
+    })
 });

@@ -3,12 +3,15 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { toast } from "react-toastify";
+import { useNavigate } from 'react-router-dom';
 
 const ShipsyLanding = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLogin, setIsLogin] = useState(true);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+
+    const navigate = useNavigate();
 
     // Animation variants
     const containerVariants = {
@@ -78,6 +81,8 @@ const ShipsyLanding = () => {
             // TODO: Replace with actual signup API call
             toast.success(`Account created for ${formValues.username || "User"}!`);
         }
+        
+        navigate('/dashboard');
 
         // Close the modal after processing
         handleCloseModal();

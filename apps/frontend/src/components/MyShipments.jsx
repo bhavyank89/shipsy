@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Plus, Package, Search, X, ChevronDown } from "lucide-react";
 import ShipmentsTable from "./ShipmentsTable";
 import Pagination from "./Pagination";
 import CreateShipmentModal from "./CreateShipmentModal";
 import DashboardNavbar from "./DashboardNavbar";
 import EditShipmentModal from "./EditShipmentModal";
+import { BACKEND_URL } from "../config/config";
 
 const STATUS_OPTIONS = ["NEW", "IN_TRANSIT", "DELIVERED", "CANCELLED"];
 
@@ -61,6 +62,7 @@ export default function MyShipments() {
     const [selectedStatus, setSelectedStatus] = useState("");
     const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [username, setUsername] = useState(null);
 
     const handleDeleteShipment = (id) =>
         setShipments((prev) => prev.filter((s) => s.id !== id));
@@ -107,10 +109,71 @@ export default function MyShipments() {
     }, [filteredShipments, currentPage]);
 
     const totalPages = Math.ceil(filteredShipments.length / itemsPerPage);
-    const [username] = useState("Alex Chen");
     const [activeTab, setActiveTab] = useState("MyShipments");
 
     const hasActiveFilters = searchTerm !== "" || selectedStatus !== "";
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const token = localStorage.getItem("token");
+
+            try {
+                // Step 1: Get logged-in user info
+                const userRes = await fetch(`${BACKEND_URL}/auth/fetch/`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        authorization: token,
+                    },
+                });
+
+                if (!userRes.ok) {
+                    throw new Error(`User fetch failed! Status: ${userRes.status}`);
+                }
+
+                const userData = await userRes.json();
+                setUsername(userData.username);
+
+                // Step 2: Get all shipments
+                const shipmentRes = await fetch(`${BACKEND_URL}/shipment/`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        authorization: token,
+                    },
+                });
+
+                if (!shipmentRes.ok) {
+                    throw new Error(`Shipments fetch failed! Status: ${shipmentRes.status}`);
+                }
+
+                const shipmentData = await shipmentRes.json();
+
+                // Step 3: Filter by logged-in user
+                const normalized = (shipmentData.data || [])
+                    .filter(s => s.createdBy?.username === userData.username) // ✅ Only this user's shipments
+                    .map(s => ({
+                        id: s._id,
+                        title: s.title,
+                        createdBy: s.createdBy?.username || "Unknown",
+                        fragile: s.fragile,
+                        status: s.status,
+                        weight: s.weightKg,
+                        distance: s.distanceKm,
+                        basePrice: s.baseRate,
+                        cost: s.cost,
+                        createdAt: s.createdAt,
+                    }));
+
+                setShipments(normalized);
+            } catch (error) {
+                console.error("Error fetching shipments:", error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
 
     return (
         <div className="min-h-screen text-gray-800 overflow-hidden relative bg-[#FFFFFF]">

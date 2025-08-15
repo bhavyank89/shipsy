@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Package, Search, X, ChevronDown } from "lucide-react";
 import ShipmentsTable from "./ShipmentsTable";
 import Pagination from "./Pagination";
 import DashboardNavbar from "./DashboardNavbar";
+import { BACKEND_URL } from "../config/config";
 
 const STATUS_OPTIONS = ["NEW", "IN_TRANSIT", "DELIVERED", "CANCELLED"];
 
@@ -100,6 +101,46 @@ export default function AllShipments() {
     const [activeTab, setActiveTab] = useState("MyShipments");
 
     const hasActiveFilters = searchTerm !== "" || selectedStatus !== "";
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const token = localStorage.getItem("token");
+            try {
+                const response = await fetch(`${BACKEND_URL}/shipment/`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "authorization": token,
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const normalized = (result.data || []).map(s => ({
+                    id: s._id,
+                    title: s.title,
+                    createdBy: s.createdBy?.username || "Unknown",
+                    fragile: s.fragile,
+                    status: s.status,
+                    weight: s.weightKg,
+                    distance: s.distanceKm,
+                    basePrice: s.baseRate,
+                    cost: s.cost,
+                    createdAt: s.createdAt,
+                }));
+
+                setShipments(normalized);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
 
     return (
         <div className="min-h-screen text-gray-800 overflow-hidden relative bg-[#FFFFFF]">

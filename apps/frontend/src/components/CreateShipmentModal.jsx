@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X as Cross, Ship as ShipIcon, Loader2 as SplineIcon } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
 
 const CreateShipmentModal = ({ isOpen, onClose, onCreate }) => {
     const [form, setForm] = useState({
@@ -14,6 +15,7 @@ const CreateShipmentModal = ({ isOpen, onClose, onCreate }) => {
 
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const weightNum = parseFloat(form.weight) || 0;
@@ -47,6 +49,7 @@ const CreateShipmentModal = ({ isOpen, onClose, onCreate }) => {
         await new Promise((resolve) => setTimeout(resolve, 800));
         if (onCreate) onCreate(form);
         setIsSubmitting(false);
+        navigate('/myshipments');
         onClose();
         setForm({
             title: "",

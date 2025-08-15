@@ -6,7 +6,9 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./App.css";
 import ShipsyLanding from './components/Landing';
-import Dashboard from "./components/Dashboard";
+import DashboardStats from "./components/DashboardStats";
+import MyShipments from "./components/MyShipments";
+import AllShipments from "./components/AllShipments";
 
 // Fake authentication hook
 const useAuth = () => {
@@ -61,7 +63,43 @@ function AnimatedRoutes() {
                 exit="exit"
                 transition={{ duration: 0.3 }}
               >
-                <Dashboard />
+                <DashboardStats />
+              </motion.div>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Protected Routes */}
+        <Route
+          path="/myshipments"
+          element={
+            <ProtectedRoute>
+              <motion.div
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={{ duration: 0.3 }}
+              >
+                <MyShipments />
+              </motion.div>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Protected Routes */}
+        <Route
+          path="/allshipments"
+          element={
+            <ProtectedRoute>
+              <motion.div
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={{ duration: 0.3 }}
+              >
+                <AllShipments />
               </motion.div>
             </ProtectedRoute>
           }

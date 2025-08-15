@@ -1,15 +1,40 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LogOut, Menu, X } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-const DashboardNavbar = ({ username = "John Doe", activeTab, setActiveTab }) => {
+const DashboardNavbar = ({ username = "John Deo" }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const navigate = useNavigate();
+
+    const location = useLocation();
+    const path = location.pathname.replace("/", ""); // e.g., "allshipments"
+
+    const tabMap = {
+        dashboard: "Dashboard",
+        myshipments: "MyShipments",
+        allshipments: "AllShipments"
+    };
+
+    const [activeTab, setActiveTab] = useState(tabMap[path] || "Dashboard");
+
+    useEffect(() => {
+        setActiveTab(tabMap[path] || "Dashboard");
+    }, [path]);
 
     const navItems = [
         { name: "Dashboard", label: "Dashboard" },
         { name: "MyShipments", label: "My Shipments" },
         { name: "AllShipments", label: "All Shipments" }
     ];
+
+    const handleClick = (item) => {
+        setActiveTab(item);
+        const name = item.toLowerCase();
+        navigate(`/${name}`);
+        setIsMenuOpen(false); // close mobile menu if open
+    };
+
 
     return (
         <motion.div
@@ -42,7 +67,7 @@ const DashboardNavbar = ({ username = "John Doe", activeTab, setActiveTab }) => 
                     {navItems.map((item) => (
                         <motion.button
                             key={item.name}
-                            onClick={() => setActiveTab(item.name)}
+                            onClick={() => handleClick(item.name)}
                             className={`relative cursor-pointer px-6 py-2.5 rounded-xl font-medium transition-all duration-300 text-sm
                                 ${activeTab === item.name
                                     ? "text-gray-900 bg-orange-200/30 shadow-inner"
@@ -109,10 +134,7 @@ const DashboardNavbar = ({ username = "John Doe", activeTab, setActiveTab }) => 
                             {navItems.map((item) => (
                                 <motion.button
                                     key={item.name}
-                                    onClick={() => {
-                                        setActiveTab(item.name);
-                                        setIsMenuOpen(false);
-                                    }}
+                                    onClick={() => handleClick(item.name)}
                                     className={`w-full text-left px-4 py-3 rounded-xl font-medium transition-all
                                         ${activeTab === item.name
                                             ? "bg-orange-200/30 text-gray-900 border border-orange-300/30"

@@ -5,11 +5,16 @@ import Pagination from "./Pagination";
 import CreateShipmentModal from "./CreateShipmentModal";
 import DashboardNavbar from "./DashboardNavbar";
 import EditShipmentModal from "./EditShipmentModal";
+import { toast } from "react-toastify";
 import { BACKEND_URL } from "../config/config";
+import DeleteConfirmationModal from "./DeleteConfirmationModal";
 
 const STATUS_OPTIONS = ["NEW", "IN_TRANSIT", "DELIVERED", "CANCELLED"];
 
 export default function MyShipments() {
+    // State to control modal visibility & selected shipment
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [shipmentToDelete, setShipmentToDelete] = useState(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [shipments, setShipments] = useState([
         {
@@ -64,8 +69,40 @@ export default function MyShipments() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [username, setUsername] = useState(null);
 
-    const handleDeleteShipment = (id) =>
-        setShipments((prev) => prev.filter((s) => s.id !== id));
+    // Open the modal
+    const openDeleteModal = (id) => {
+        setShipmentToDelete(id);
+        setIsDeleteModalOpen(true);
+    };
+
+    // Called when confirmed
+    const handleDeleteShipment = async (id) => {
+        try {
+            const token = localStorage.getItem("token");
+
+            const response = await fetch(`${BACKEND_URL}/shipment/${id}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    authorization: token,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to delete shipment: ${response.status}`);
+            }
+
+            // Update local state to remove the shipment
+            setShipments((prev) => prev.filter((s) => s.id !== id));
+
+            toast.success("Shipment deleted successfully!");
+            setIsDeleteModalOpen(false);
+            setShipmentToDelete(null);
+        } catch (error) {
+            console.error("Error deleting shipment:", error);
+            toast.error("Failed to delete shipment. Please try again.");
+        }
+    };
 
     const clearFilters = () => {
         setSearchTerm("");
@@ -89,7 +126,7 @@ export default function MyShipments() {
             const matchesSearch =
                 searchTerm === "" ||
                 shipment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                shipment.createdBy.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                shipment.createdBy?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 shipment.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 shipment.status.toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -173,7 +210,6 @@ export default function MyShipments() {
 
         fetchData();
     }, []);
-
 
     return (
         <div className="min-h-screen text-gray-800 overflow-hidden relative bg-[#FFFFFF]">
@@ -278,7 +314,7 @@ export default function MyShipments() {
                         <ShipmentsTable
                             shipments={paginatedShipments}
                             onEdit={handleEditShipment}
-                            onDelete={handleDeleteShipment}
+                            onDelete={openDeleteModal}
                         />
                         <Pagination
                             currentPage={currentPage}
@@ -286,7 +322,6 @@ export default function MyShipments() {
                             setCurrentPage={setCurrentPage}
                         />
                     </>
-
                 ) : (
                     <div className="bg-white rounded-2xl shadow-md p-12 text-center">
                         <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -301,19 +336,25 @@ export default function MyShipments() {
                     </div>
                 )}
 
-                {/* Modal */}
+                {/* Modals */}
                 <CreateShipmentModal
                     isOpen={isCreateModalOpen}
                     onClose={() => setIsCreateModalOpen(false)}
                     onCreate={() => setIsCreateModalOpen(false)}
                     setActiveTab={setActiveTab}
                 />
-                {/* Modal for Edit */}
+
                 <EditShipmentModal
                     isOpen={isEditModalOpen}
                     onClose={() => setIsEditModalOpen(false)}
                     onSave={handleSaveEditedShipment}
                     shipment={shipmentToEdit}
+                />
+
+                <DeleteConfirmationModal
+                    isOpen={isDeleteModalOpen}
+                    onCancel={() => setIsDeleteModalOpen(false)}
+                    onConfirm={() => handleDeleteShipment(shipmentToDelete)}
                 />
             </div>
         </div>

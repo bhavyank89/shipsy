@@ -1,8 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { LogOut, Menu, X } from 'lucide-react';
+import { LogOut, Menu, ToolCase, X } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { BACKEND_URL } from '../config/config';
+import { toast } from 'react-toastify';
 
 const DashboardNavbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -65,6 +66,11 @@ const DashboardNavbar = () => {
         setIsMenuOpen(false); // close mobile menu if open
     };
 
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        toast.success("Logged Out Successfully!!!");
+        navigate('/');
+    }
 
     return (
         <motion.div
@@ -131,6 +137,7 @@ const DashboardNavbar = () => {
                             <span className="text-lg">{username.charAt(0)}</span>
                         </div>
                         <motion.div
+                            onClick={handleLogout}
                             whileHover={{ scale: 1.2 }}
                             className='cursor-pointer'
                         >

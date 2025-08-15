@@ -2,19 +2,49 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { LogOut, Menu, X } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { BACKEND_URL } from '../config/config';
 
-const DashboardNavbar = ({ username = "John Deo" }) => {
+const DashboardNavbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const navigate = useNavigate();
+    const [username, setUsername] = useState('John Deo');
 
     const location = useLocation();
     const path = location.pathname.replace("/", ""); // e.g., "allshipments"
+
+    const token = localStorage.getItem('token');
 
     const tabMap = {
         dashboard: "Dashboard",
         myshipments: "MyShipments",
         allshipments: "AllShipments"
     };
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await fetch(`${BACKEND_URL}/auth/fetch/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'authorization': token,
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                setUsername(data.username);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        fetchData();
+    });
+
 
     const [activeTab, setActiveTab] = useState(tabMap[path] || "Dashboard");
 

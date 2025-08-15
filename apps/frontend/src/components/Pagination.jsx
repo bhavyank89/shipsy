@@ -1,45 +1,99 @@
-// src/components/Pagination.jsx
-import React from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { motion } from "framer-motion";
 
-export default function Pagination({ currentPage, totalPages, onPageChange }) {
-    const goToPage = (page) => {
-        if (page >= 1 && page <= totalPages) {
-            onPageChange(page);
-        }
-    };
+const PaginationControls = ({ currentPage, totalPages, setCurrentPage, theme = "dark" }) => {
+    if (totalPages <= 1) return null;
 
-    if (totalPages <= 1) return null; // No pagination needed
+    const isDark = theme === "dark";
+
+    const containerClasses = `
+        fixed bottom-6 left-1/2 -translate-x-1/2 z-2
+        backdrop-blur-sm rounded-xl px-4 py-3 flex flex-col items-center gap-3
+        w-[90%] sm:w-auto max-w-full
+        ${isDark ? "bg-black/30 border border-white/10 shadow-black/30" : "bg-white/30 border border-white/20 shadow-md"}
+    `;
+
+    const textColor = isDark ? "text-black" : "text-gray-800";
+    const textMuted = isDark ? "text-orange" : "text-gray-500";
+    const borderColor = isDark ? "border-gray-700" : "border-gray-300";
+    const bgButton = isDark
+        ? "bg-gray-800 hover:bg-gray-700 text-white"
+        : "bg-[#F79B72] hover:bg-blue-100 text-gray-700";
+    const activeButton = "bg-[#F79B72] text-black bg-[#F79B72]";
 
     return (
-        <div className="flex justify-center mt-6 gap-2">
-            <button
-                className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded font-medium disabled:opacity-50 transition-colors duration-200"
-                onClick={() => goToPage(currentPage - 1)}
-                disabled={currentPage === 1}
-            >
-                Prev
-            </button>
+        <div className={containerClasses}>
+            {/* Page Info Centered Above Buttons */}
+            <p className={`text-sm ${textMuted}`}>
+                Showing page{" "}
+                <span className={`font-semibold ${textColor}`}>{currentPage}</span> of{" "}
+                <span className={`font-semibold ${textColor}`}>{totalPages}</span>
+            </p>
 
-            {Array.from({ length: totalPages }, (_, i) => (
-                <button
-                    key={i + 1}
-                    className={`px-3 py-1 rounded font-medium transition-colors duration-200 ${currentPage === i + 1
-                            ? "bg-orange-400 text-white shadow-md"
-                            : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+            {/* Pagination Buttons */}
+            <div className="flex items-center gap-1 flex-wrap justify-center">
+                {/* Prev Button */}
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className={`px-2.5 py-1 cursor-pointer text-sm border rounded flex items-center gap-1 transition-all duration-150
+                    ${currentPage === 1
+                            ? `opacity-50 cursor-not-allowed ${isDark ? "bg-gray-900 border-gray-800 text-white" : "bg-gray-100 border-gray-200 text-gray-400"}`
+                            : `${bgButton} ${borderColor}`
                         }`}
-                    onClick={() => goToPage(i + 1)}
                 >
-                    {i + 1}
-                </button>
-            ))}
+                    <ChevronLeft size={16} />
+                    Prev
+                </motion.button>
 
-            <button
-                className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded font-medium disabled:opacity-50 transition-colors duration-200"
-                onClick={() => goToPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
-            >
-                Next
-            </button>
+                {/* First Page */}
+                {currentPage > 1 && (
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        onClick={() => setCurrentPage(1)}
+                        className={`px-3 py-1 text-sm border rounded transition-all ${bgButton} ${borderColor}`}
+                    >
+                        1
+                    </motion.button>
+                )}
+
+                {/* Current Page */}
+                <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    className={`px-3 py-1 text-sm border rounded shadow-sm ${activeButton}`}
+                >
+                    {currentPage}
+                </motion.div>
+
+                {/* Last Page */}
+                {currentPage < totalPages && (
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        onClick={() => setCurrentPage(totalPages)}
+                        className={`px-3 py-1 text-sm border rounded transition-all ${bgButton} ${borderColor}`}
+                    >
+                        {totalPages}
+                    </motion.button>
+                )}
+
+                {/* Next Button */}
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className={`px-2.5 py-1 text-sm border rounded flex items-center gap-1 transition-all cursor-pointer duration-150
+                    ${currentPage === totalPages
+                            ? `opacity-50 cursor-not-allowed ${isDark ? "bg-gray-900 border-gray-800 text-white" : "bg-gray-100 border-gray-200 text-gray-400"}`
+                            : `${bgButton} ${borderColor}`
+                        }`}
+                >
+                    Next
+                    <ChevronRight size={16} />
+                </motion.button>
+            </div>
         </div>
     );
-}
+};
+
+export default PaginationControls;

@@ -1,85 +1,191 @@
-import React, { useState } from "react";
-import ShipmentActions from "./ShipmentActions";
-import Pagination from "./Pagination";
-import { motion, AnimatePresence } from "framer-motion";
+import React from "react";
+import { motion } from "framer-motion";
 
-export default function ShipmentsTable({ shipments, onEdit, onDelete }) {
-    const [currentPage, setCurrentPage] = useState(1);
-    const shipmentsPerPage = 5;
+const getStatusBadge = (status) => {
+    const statusConfig = {
+        NEW: {
+            color: "bg-gradient-to-r from-blue-500 to-blue-600",
+            text: "text-white",
+            shadow: "shadow-blue-200"
+        },
+        IN_TRANSIT: {
+            color: "bg-gradient-to-r from-amber-500 to-orange-500",
+            text: "text-white",
+            shadow: "shadow-amber-200"
+        },
+        DELIVERED: {
+            color: "bg-gradient-to-r from-emerald-500 to-green-600",
+            text: "text-white",
+            shadow: "shadow-emerald-200"
+        },
+        CANCELLED: {
+            color: "bg-gradient-to-r from-red-500 to-red-600",
+            text: "text-white",
+            shadow: "shadow-red-200"
+        },
+    };
 
-    const totalPages = Math.ceil(shipments.length / shipmentsPerPage);
-    const indexOfLastShipment = currentPage * shipmentsPerPage;
-    const indexOfFirstShipment = indexOfLastShipment - shipmentsPerPage;
-    const currentShipments = shipments.slice(indexOfFirstShipment, indexOfLastShipment);
+    const config = statusConfig[status] || {
+        color: "bg-gradient-to-r from-gray-500 to-gray-600",
+        text: "text-white",
+        shadow: "shadow-gray-200"
+    };
 
     return (
-        <div className="mt-6">
-            {/* Table Container */}
-            <div className="overflow-x-auto glassmorphism rounded-2xl p-4 shadow-lg border border-gray-300/30">
-                <table className="w-full text-left border-collapse">
-                    <thead>
-                        <tr className="bg-blue-100 text-blue-900 uppercase text-sm tracking-wide rounded-xl">
-                            <th className="p-3">ID</th>
-                            <th className="p-3">Name</th>
-                            <th className="p-3">Status</th>
-                            <th className="p-3">Date</th>
-                            <th className="p-3">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <AnimatePresence>
-                            {currentShipments.map((shipment) => (
-                                <motion.tr
-                                    key={shipment.id}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    transition={{ duration: 0.3 }}
-                                    className="border-b border-gray-200 hover:bg-gray-100 transition-colors cursor-pointer rounded-lg"
-                                >
-                                    <td className="p-3 font-medium text-gray-900">{shipment.id}</td>
-                                    <td className="p-3 text-gray-800">{shipment.name}</td>
-                                    <td className="p-3">
-                                        <span
-                                            className={`px-2 py-1 rounded-full text-sm font-semibold ${shipment.status === "Delivered"
-                                                    ? "bg-green-100 text-green-800"
-                                                    : shipment.status === "Pending"
-                                                        ? "bg-yellow-100 text-yellow-800"
-                                                        : "bg-purple-100 text-purple-800"
-                                                }`}
-                                        >
-                                            {shipment.status}
-                                        </span>
-                                    </td>
-                                    <td className="p-3 text-gray-800">{shipment.date}</td>
-                                    <td className="p-3">
-                                        <ShipmentActions
-                                            onEdit={() => onEdit(shipment.id)}
-                                            onDelete={() => onDelete(shipment.id)}
-                                        />
-                                    </td>
-                                </motion.tr>
-                            ))}
-                        </AnimatePresence>
-                    </tbody>
-                </table>
-            </div>
+        <span
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold ${config.color} ${config.text} shadow-sm ${config.shadow}`}
+        >
+            {status.replace('_', ' ')}
+        </span>
+    );
+};
 
-            {/* Pagination */}
-            <div className="mt-4">
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                />
-            </div>
+const getFragileBadge = (fragile) => {
+    return fragile ? (
+        <span className="px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-red-500 to-red-600 text-white shadow-sm shadow-red-200">
+            Fragile
+        </span>
+    ) : (
+        <span className="px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-slate-400 to-slate-500 text-white shadow-sm shadow-slate-200">
+            Standard
+        </span>
+    );
+};
 
-            <style jsx>{`
-                .glassmorphism {
-                    background: rgba(255, 255, 255, 0.7);
-                    backdrop-filter: blur(20px);
-                }
-            `}</style>
+const formatCurrency = (value) =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
+
+export default function ShipmentsTable({ shipments, onEdit, onDelete }) {
+    return (
+        <div className="p-6 bg-gray-50">
+            <div className="max-w-full">
+                {/* Table Container with Horizontal Scroll */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
+                >
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full w-full">
+                            <thead>
+                                <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                                    <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900 tracking-wider min-w-[200px]">
+                                        Title
+                                    </th>
+                                    {shipments?.some(s => s.createdBy) && (
+                                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 tracking-wider min-w-[140px]">
+                                            Created By
+                                        </th>
+                                    )}
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 tracking-wider">
+                                        Type
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 tracking-wider">
+                                        Status
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 tracking-wider">
+                                        Weight
+                                        <span className="text-xs text-gray-500 block">kg</span>
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 tracking-wider">
+                                        Distance
+                                        <span className="text-xs text-gray-500 block">km</span>
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 tracking-wider">
+                                        Base Price
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 tracking-wider">
+                                        Total Cost
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 tracking-wider">
+                                        Created
+                                    </th>
+                                    <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900 tracking-wider min-w-[120px]">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {shipments?.map((shipment, index) => (
+                                    <motion.tr
+                                        key={shipment.id}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: index * 0.1, duration: 0.3 }}
+                                        className="hover:bg-gray-50 transition-all duration-200 group"
+                                    >
+                                        <td className="px-6 py-5">
+                                            <div className="max-w-[200px]">
+                                                <p
+                                                    className="text-sm font-medium text-gray-900 truncate group-hover:text-blue-600 transition-colors cursor-pointer"
+                                                    title={shipment.title}
+                                                >
+                                                    {shipment.title}
+                                                </p>
+                                            </div>
+                                        </td>
+                                        {shipments?.some(s => s.createdBy) && (
+                                            <td className="px-6 py-5 whitespace-nowrap">
+                                                <span className="text-sm text-gray-900 font-medium">
+                                                    {shipment.createdBy || "-"}
+                                                </span>
+                                            </td>
+                                        )}
+                                        <td className="px-6 py-5 whitespace-nowrap">
+                                            {getFragileBadge(shipment.fragile)}
+                                        </td>
+                                        <td className="px-6 py-5 whitespace-nowrap">
+                                            {getStatusBadge(shipment.status)}
+                                        </td>
+                                        <td className="px-6 py-5 whitespace-nowrap">
+                                            <span className="text-sm font-semibold text-gray-900">{shipment.weight}</span>
+                                        </td>
+                                        <td className="px-6 py-5 whitespace-nowrap">
+                                            <span className="text-sm font-semibold text-gray-900">{shipment.distance}</span>
+                                        </td>
+                                        <td className="px-6 py-5 whitespace-nowrap">
+                                            <span className="text-sm font-semibold text-gray-600">{formatCurrency(shipment.basePrice)}</span>
+                                        </td>
+                                        <td className="px-6 py-5 whitespace-nowrap">
+                                            <span className="text-sm font-bold text-green-600">{formatCurrency(shipment.cost)}</span>
+                                        </td>
+                                        <td className="px-6 py-5 whitespace-nowrap">
+                                            <span className="text-sm text-gray-600">
+                                                {new Date(shipment.createdAt).toLocaleDateString('en-US', {
+                                                    month: 'short',
+                                                    day: 'numeric',
+                                                    year: 'numeric'
+                                                })}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-5 whitespace-nowrap">
+                                            <div className="flex items-center justify-center gap-2">
+                                                <button
+                                                    onClick={() => onEdit && onEdit(shipment)}
+                                                    className="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 rounded-lg text-sm font-medium 
+                                                    cursor-pointer
+                                                    transition-all duration-200 hover:shadow-sm"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => onDelete && onDelete(shipment.id)}
+                                                    className="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 rounded-lg text-sm font-medium 
+                                                    cursor-pointer
+                                                    transition-all duration-200 hover:shadow-sm"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </motion.tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </motion.div>
+            </div>
         </div>
     );
 }

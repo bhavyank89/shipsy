@@ -1,94 +1,165 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const CreateShipmentModal = ({ isOpen, onClose }) => {
-    if (!isOpen) return null;
+const CreateShipmentModal = ({ isOpen, onClose, onCreate }) => {
+    const [form, setForm] = useState({
+        title: "",
+        fragile: "No",
+        status: "NEW",
+        weight: "",
+        distance: "",
+        baseRate: "",
+        cost: 0,
+    });
 
-    const modalVariants = {
-        hidden: { opacity: 0, scale: 0.8 },
-        visible: { opacity: 1, scale: 1, transition: { duration: 0.3, ease: "easeOut" } },
-        exit: { opacity: 0, scale: 0.8, transition: { duration: 0.2 } }
+    // Auto-calculate cost whenever relevant values change
+    useEffect(() => {
+        const weightNum = parseFloat(form.weight) || 0;
+        const baseRateNum = parseFloat(form.baseRate) || 0;
+        const distanceNum = parseFloat(form.distance) || 0;
+
+        const calculatedCost = weightNum * baseRateNum + distanceNum * 0.5;
+        setForm((prev) => ({ ...prev, cost: calculatedCost }));
+    }, [form.weight, form.baseRate, form.distance]);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setForm((prev) => ({ ...prev, [name]: value }));
     };
 
-    const overlayVariants = {
-        hidden: { opacity: 0 },
-        visible: { opacity: 1 },
-        exit: { opacity: 0 }
+    const handleSubmit = () => {
+        if (onCreate) onCreate(form);
+        onClose();
     };
 
     return (
         <AnimatePresence>
-            <motion.div
-                className="fixed inset-0 z-[60] flex items-center justify-center p-4"
-                variants={overlayVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-            >
-                <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose}></div>
-
+            {isOpen && (
                 <motion.div
-                    className="relative w-full max-w-md glassmorphism rounded-3xl p-8 border border-white/20 shadow-2xl"
-                    variants={modalVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-6"
                 >
-                    <button
-                        onClick={onClose}
-                        className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors duration-200"
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.9, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-8 overflow-y-auto"
+                        style={{ maxHeight: "90vh" }}
                     >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+                        <h3 className="text-2xl font-semibold mb-6">Create New Shipment</h3>
 
-                    <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent mb-2">
-                            Create New Shipment
-                        </h2>
-                        <p className="text-gray-400 text-sm">Add a new shipment to track</p>
-                    </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Title */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                                <input
+                                    type="text"
+                                    name="title"
+                                    value={form.title}
+                                    onChange={handleChange}
+                                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                />
+                            </div>
 
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">Shipment Name</label>
-                            <input
-                                type="text"
-                                placeholder="Enter shipment name"
-                                className="w-full px-4 py-3 bg-slate-800/50 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-white placeholder-gray-400"
-                            />
+                            {/* Fragile */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Fragile</label>
+                                <select
+                                    name="fragile"
+                                    value={form.fragile}
+                                    onChange={handleChange}
+                                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                >
+                                    <option>No</option>
+                                    <option>Yes</option>
+                                </select>
+                            </div>
+
+                            {/* Status */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                <select
+                                    name="status"
+                                    value={form.status}
+                                    onChange={handleChange}
+                                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                >
+                                    <option value="NEW">New</option>
+                                    <option value="IN_TRANSIT">In Transit</option>
+                                    <option value="DELIVERED">Delivered</option>
+                                    <option value="CANCELLED">Cancelled</option>
+                                </select>
+                            </div>
+
+                            {/* Weight */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Weight (kg)</label>
+                                <input
+                                    type="number"
+                                    name="weight"
+                                    value={form.weight}
+                                    onChange={handleChange}
+                                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                />
+                            </div>
+
+                            {/* Distance */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Distance (km)</label>
+                                <input
+                                    type="number"
+                                    name="distance"
+                                    value={form.distance}
+                                    onChange={handleChange}
+                                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                />
+                            </div>
+
+                            {/* Base Rate */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Base Rate</label>
+                                <input
+                                    type="number"
+                                    name="baseRate"
+                                    value={form.baseRate}
+                                    onChange={handleChange}
+                                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                />
+                            </div>
+
+                            {/* Cost (read-only) */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Cost (USD)</label>
+                                <input
+                                    type="number"
+                                    value={form.cost.toFixed(2)}
+                                    readOnly
+                                    className="w-full border rounded-lg px-3 py-2 bg-gray-100 cursor-not-allowed"
+                                />
+                            </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">Destination</label>
-                            <input
-                                type="text"
-                                placeholder="Enter destination"
-                                className="w-full px-4 py-3 bg-slate-800/50 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-white placeholder-gray-400"
-                            />
-                        </div>
-
-                        <div className="flex gap-3 pt-4">
-                            <motion.button
+                        {/* Actions */}
+                        <div className="flex justify-end gap-4 mt-8">
+                            <button
                                 onClick={onClose}
-                                className="flex-1 px-4 py-3 bg-slate-800/50 border border-gray-600 rounded-xl hover:bg-slate-700/50 transition-all text-gray-300 font-medium"
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
+                                className="px-5 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
                             >
                                 Cancel
-                            </motion.button>
-                            <motion.button
-                                className="flex-1 px-4 py-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl hover:shadow-xl font-medium text-white border border-orange-400/20"
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
+                            </button>
+                            <button
+                                onClick={handleSubmit}
+                                className="px-5 py-2 bg-orange-400 hover:bg-orange-500 text-white rounded-lg transition-colors"
                             >
                                 Create
-                            </motion.button>
+                            </button>
                         </div>
-                    </div>
+                    </motion.div>
                 </motion.div>
-            </motion.div>
+            )}
         </AnimatePresence>
     );
 };

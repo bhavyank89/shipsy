@@ -2,34 +2,35 @@ import React, { useState, useMemo } from "react";
 import { Plus, Package, Search, X, ChevronDown } from "lucide-react";
 import ShipmentsTable from "./ShipmentsTable";
 import Pagination from "./Pagination";
+import CreateShipmentModal from "./CreateShipmentModal";
 
 const STATUS_OPTIONS = ["NEW", "IN_TRANSIT", "DELIVERED", "CANCELLED"];
 
-const CreateShipmentModal = ({ isOpen, onClose }) => {
-    if (!isOpen) return null;
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl p-6 w-96 max-w-90vw">
-                <h3 className="text-lg font-semibold mb-4">Create New Shipment</h3>
-                <p className="text-gray-600 mb-6">Modal content would go here...</p>
-                <div className="flex gap-3 justify-end">
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 bg-orange-400 hover:bg-orange-500 text-white rounded-lg transition-colors"
-                    >
-                        Create
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-};
+// const CreateShipmentModal = ({ isOpen, onClose }) => {
+//     if (!isOpen) return null;
+//     return (
+//         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+//             <div className="bg-white rounded-2xl p-6 w-96 max-w-90vw shadow-2xl">
+//                 <h3 className="text-lg font-semibold mb-4">Create New Shipment</h3>
+//                 <p className="text-gray-600 mb-6">Modal content would go here...</p>
+//                 <div className="flex gap-3 justify-end">
+//                     <button
+//                         onClick={onClose}
+//                         className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+//                     >
+//                         Cancel
+//                     </button>
+//                     <button
+//                         onClick={onClose}
+//                         className="px-4 py-2 bg-orange-400 hover:bg-orange-500 text-white rounded-lg transition-colors"
+//                     >
+//                         Create
+//                     </button>
+//                 </div>
+//             </div>
+//         </div>
+//     );
+// };
 
 export default function MyShipments() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -246,6 +247,7 @@ export default function MyShipments() {
             <CreateShipmentModal
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
+                onCreate={() => setIsCreateModalOpen(false)}
             />
         </div>
     );

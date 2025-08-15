@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import {toast} from 'react-toastify';
+import { toast } from 'react-toastify';
+import { BACKEND_URL } from '../config/config';
 
 const ShipsyLanding = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -62,31 +63,81 @@ const ShipsyLanding = () => {
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
+        // Reset form fields when modal closes
+        setUsername("");
+        setPassword("");
     };
 
-    const handleFormSubmit = (e) => {
+    const handleFormSubmit = async (e) => {
         e.preventDefault();
 
-        // Create FormData from the form event
-        const formData = new FormData(e.target);
-        const formValues = Object.fromEntries(formData.entries());
+        // Use the state values directly instead of FormData
+        const formValues = {
+            username: username,
+            password: password
+        };
 
         if (isLogin) {
-            console.log("Login form submitted:", formValues);
-            // TODO: Replace with actual login API call
-            toast.success(`Welcome back, ${formValues.username || "User"}!`);
+            try {
+                const response = await fetch(`${BACKEND_URL}/auth/login`, {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formValues)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const token = data.token;
+                if (token) {
+                    localStorage.setItem("token", token);
+                    toast.success(`Welcome back, ${formValues.username || "User"}!`);
+                    navigate("/dashboard");
+                    handleCloseModal();
+                } else {
+                    toast.error("Login failed: No token received.");
+                }
+            } catch (e) {
+                console.error("Error occurred!!", e.message);
+                toast.warning("Error logging in");
+            }
         } else {
-            console.log("Signup form submitted:", formValues);
             // TODO: Replace with actual signup API call
-            toast.success(`Account created for ${formValues.username || "User"}!`);
+            try {
+                const response = await fetch(`${BACKEND_URL}/auth/signup`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",  // tell the server it's JSON
+                    },
+                    body: JSON.stringify({
+                        username,
+                        password
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                if (data) {
+                    toast.success("You have registered Successfully!!");
+                    toast.success("You can now login again to access dashboard!!");
+                    navigate("/");
+                    handleCloseModal();
+                } else {
+                    toast.error("SignUp failed");
+                }
+            } catch (e) {
+                console.error("Error occurred!!", e.message);
+                toast.warning("Error creating account");
+            }
         }
-
-        navigate('/dashboard');
-
-        // Close the modal after processing
-        handleCloseModal();
     };
-
 
     return (
         <div className="min-h-screen text-white overflow-hidden relative">
@@ -256,6 +307,7 @@ const ShipsyLanding = () => {
                                     </label>
                                     <input
                                         type="text"
+                                        name="username"
                                         required
                                         value={username}
                                         onChange={(e) => setUsername(e.target.value)}
@@ -270,6 +322,7 @@ const ShipsyLanding = () => {
                                     </label>
                                     <input
                                         type="password"
+                                        name="password"
                                         required
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
@@ -441,6 +494,7 @@ const ShipsyLanding = () => {
                             boxShadow: "0 30px 60px -12px rgba(251, 146, 60, 0.4)"
                         }}
                         whileTap={{ scale: 0.95 }}
+                        onClick={handleOpenModal}
                     >
                         <span className="relative z-10">Get Started</span>
                         <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>

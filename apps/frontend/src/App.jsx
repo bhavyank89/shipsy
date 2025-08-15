@@ -18,8 +18,8 @@ const useAuth = () => {
 
 // Protected route wrapper
 const ProtectedRoute = ({ children }) => {
-  const isAuth = true;
-  // const isAuth = useAuth();
+  // const isAuth = true;
+  const isAuth = useAuth();
   return isAuth ? children : <Navigate to="/login" replace />;
 };
 

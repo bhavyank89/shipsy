@@ -4,6 +4,7 @@ import connectToMongoDB from './config/db.js';
 import Home from './routes/Home.js';
 import Auth from './routes/Auth.js';
 import Shipment from './routes/Shipment.js';
+import cors from "cors";
 
 dotenv.config();
 
@@ -11,6 +12,8 @@ const app = express();
 
 // ✅ Middleware to parse incoming JSON requests
 app.use(express.json());
+
+app.use(cors());
 
 const port = process.env.PORT || 5000;
 

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { X as Cross, Ship as ShipIcon, Loader2 as SplineIcon } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
+import { BACKEND_URL } from '../config/config';
+import { toast } from 'react-toastify';
 
 const CreateShipmentModal = ({ isOpen, onClose, onCreate }) => {
     const [form, setForm] = useState({
@@ -25,6 +27,34 @@ const CreateShipmentModal = ({ isOpen, onClose, onCreate }) => {
         setForm((prev) => ({ ...prev, cost: calculatedCost }));
     }, [form.weight, form.baseRate, form.distance]);
 
+    const [username, setUsername] = useState('John Deo');
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${BACKEND_URL}/auth/fetch/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'authorization': token,
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                setUsername(data.username);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setForm((prev) => ({ ...prev, [name]: value }));
@@ -45,22 +75,61 @@ const CreateShipmentModal = ({ isOpen, onClose, onCreate }) => {
 
     const handleSubmit = async () => {
         if (!validateForm()) return;
-        setIsSubmitting(true);
-        await new Promise((resolve) => setTimeout(resolve, 800));
-        if (onCreate) onCreate(form);
-        setIsSubmitting(false);
-        navigate('/myshipments');
-        onClose();
-        setForm({
-            title: "",
-            fragile: "No",
-            status: "New",
-            weight: "",
-            distance: "",
-            baseRate: "",
-            cost: 0,
-        });
+
+        try {
+            setIsSubmitting(true);
+
+            const token = localStorage.getItem("token");
+
+            const response = await fetch(`${BACKEND_URL}/shipment`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "authorization": token,
+                },
+                body: JSON.stringify({
+                    title: form.title,
+                    status: form.status.toUpperCase(), // API expects uppercase
+                    fragile: form.fragile === "Yes" ? "true" : "false",
+                    weightKg: form.weight,
+                    distanceKm: form.distance,
+                    baseRate: form.baseRate,
+                    createdBy: username,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to create shipment: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // Optional: Update parent state with new shipment
+            if (onCreate) onCreate(data);
+
+            // Reset and navigate
+            setForm({
+                title: "",
+                fragile: "No",
+                status: "New",
+                weight: "",
+                distance: "",
+                baseRate: "",
+                cost: 0,
+            });
+
+            toast.success("Created New Shipment!!");
+            navigate("/myshipments");
+            onClose();
+
+        } catch (error) {
+            console.error("Error creating shipment:", error);
+            toast.warning("Failed to create shipment. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
+
 
     if (!isOpen) return null;
 

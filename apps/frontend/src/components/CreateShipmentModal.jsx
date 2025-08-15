@@ -1,100 +1,100 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { X as Cross, Ship as ShipIcon, Loader2 as SplineIcon } from "lucide-react";
 
 const CreateShipmentModal = ({ isOpen, onClose, onCreate }) => {
     const [form, setForm] = useState({
         title: "",
         fragile: "No",
-        status: "NEW",
+        status: "New",
         weight: "",
         distance: "",
         baseRate: "",
         cost: 0,
     });
 
-    // Auto-calculate cost whenever relevant values change
+    const [errors, setErrors] = useState({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     useEffect(() => {
         const weightNum = parseFloat(form.weight) || 0;
         const baseRateNum = parseFloat(form.baseRate) || 0;
         const distanceNum = parseFloat(form.distance) || 0;
-
-        const calculatedCost = weightNum * baseRateNum + distanceNum * 0.5;
+        let calculatedCost = weightNum * baseRateNum + distanceNum * 0.5;
         setForm((prev) => ({ ...prev, cost: calculatedCost }));
     }, [form.weight, form.baseRate, form.distance]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setForm((prev) => ({ ...prev, [name]: value }));
+        if (errors[name]) {
+            setErrors((prev) => ({ ...prev, [name]: "" }));
+        }
     };
 
-    const handleSubmit = () => {
-        if (onCreate) onCreate(form);
-        onClose();
+    const validateForm = () => {
+        const newErrors = {};
+        if (!form.title.trim()) newErrors.title = "Title is required";
+        if (!form.weight || parseFloat(form.weight) <= 0) newErrors.weight = "Valid weight is required";
+        if (!form.distance || parseFloat(form.distance) <= 0) newErrors.distance = "Valid distance is required";
+        if (!form.baseRate || parseFloat(form.baseRate) <= 0) newErrors.baseRate = "Valid base rate is required";
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
+
+    const handleSubmit = async () => {
+        if (!validateForm()) return;
+        setIsSubmitting(true);
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        if (onCreate) onCreate(form);
+        setIsSubmitting(false);
+        onClose();
+        setForm({
+            title: "",
+            fragile: "No",
+            status: "New",
+            weight: "",
+            distance: "",
+            baseRate: "",
+            cost: 0,
+        });
+    };
+
+    if (!isOpen) return null;
 
     return (
-        <AnimatePresence>
-            {isOpen && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-6"
-                >
-                    <motion.div
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.9, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-8 overflow-y-auto"
-                        style={{ maxHeight: "90vh" }}
-                    >
-                        <h3 className="text-2xl font-semibold mb-6">Create New Shipment</h3>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Title */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                                <input
-                                    type="text"
-                                    name="title"
-                                    value={form.title}
-                                    onChange={handleChange}
-                                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
-                                />
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4 pt-20 overflow-y-auto">
+            {/* Added py-12 here to give top/bottom margin */}
+            <div className="relative bg-white rounded-2xl shadow-2xl p-8 w-full max-w-3xl transform transition-all duration-300 scale-95 opacity-0 animate-scaleIn">
+                <div className="overflow-y-auto m-2 p-2">
+                    {/* Header */}
+                    <div className="flex items-center justify-between pb-4 border-b border-gray-200 mb-6">
+                        <div className="flex items-center space-x-3">
+                            <div className="p-2 bg-blue-100 text-blue-600 rounded-full">
+                                <ShipIcon size={20} />
                             </div>
+                            <h2 className="text-xl font-semibold text-gray-800">Create Shipment</h2>
+                        </div>
+                        <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+                            <Cross size={24} />
+                        </button>
+                    </div>
 
-                            {/* Fragile */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Fragile</label>
-                                <select
-                                    name="fragile"
-                                    value={form.fragile}
-                                    onChange={handleChange}
-                                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
-                                >
-                                    <option>No</option>
-                                    <option>Yes</option>
-                                </select>
-                            </div>
+                    {/* Form */}
+                    <div className="space-y-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Shipment Title</label>
+                            <input
+                                type="text"
+                                name="title"
+                                value={form.title}
+                                onChange={handleChange}
+                                placeholder="Enter a descriptive title"
+                                className={`w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${errors.title ? "border-red-500" : "border-gray-300"}`}
+                            />
+                            {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title}</p>}
+                        </div>
 
-                            {/* Status */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                                <select
-                                    name="status"
-                                    value={form.status}
-                                    onChange={handleChange}
-                                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
-                                >
-                                    <option value="NEW">New</option>
-                                    <option value="IN_TRANSIT">In Transit</option>
-                                    <option value="DELIVERED">Delivered</option>
-                                    <option value="CANCELLED">Cancelled</option>
-                                </select>
-                            </div>
-
-                            {/* Weight */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Weight (kg)</label>
                                 <input
@@ -102,11 +102,14 @@ const CreateShipmentModal = ({ isOpen, onClose, onCreate }) => {
                                     name="weight"
                                     value={form.weight}
                                     onChange={handleChange}
-                                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                    placeholder="0.0"
+                                    min="0"
+                                    step="0.1"
+                                    className={`w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${errors.weight ? "border-red-500" : "border-gray-300"}`}
                                 />
+                                {errors.weight && <p className="mt-1 text-xs text-red-600">{errors.weight}</p>}
                             </div>
 
-                            {/* Distance */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Distance (km)</label>
                                 <input
@@ -114,54 +117,113 @@ const CreateShipmentModal = ({ isOpen, onClose, onCreate }) => {
                                     name="distance"
                                     value={form.distance}
                                     onChange={handleChange}
-                                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                    placeholder="0.0"
+                                    min="0"
+                                    step="0.1"
+                                    className={`w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${errors.distance ? "border-red-500" : "border-gray-300"}`}
                                 />
+                                {errors.distance && <p className="mt-1 text-xs text-red-600">{errors.distance}</p>}
                             </div>
+                        </div>
 
-                            {/* Base Rate */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Base Rate</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Base Rate ($/kg)</label>
                                 <input
                                     type="number"
                                     name="baseRate"
                                     value={form.baseRate}
                                     onChange={handleChange}
-                                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                    placeholder="0.00"
+                                    min="0"
+                                    step="0.01"
+                                    className={`w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${errors.baseRate ? "border-red-500" : "border-gray-300"}`}
                                 />
+                                {errors.baseRate && <p className="mt-1 text-xs text-red-600">{errors.baseRate}</p>}
                             </div>
 
-                            {/* Cost (read-only) */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Cost (USD)</label>
-                                <input
-                                    type="number"
-                                    value={form.cost.toFixed(2)}
-                                    readOnly
-                                    className="w-full border rounded-lg px-3 py-2 bg-gray-100 cursor-not-allowed"
-                                />
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Fragile Handling</label>
+                                <select
+                                    name="fragile"
+                                    value={form.fragile}
+                                    onChange={handleChange}
+                                    className="w-full border border-gray-300 cursor-pointer rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                                >
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
                             </div>
                         </div>
 
-                        {/* Actions */}
-                        <div className="flex justify-end gap-4 mt-8">
-                            <button
-                                onClick={onClose}
-                                className="px-5 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Shipment Status</label>
+                            <select
+                                name="status"
+                                value={form.status}
+                                onChange={handleChange}
+                                className="w-full border border-gray-300 rounded-lg cursor-pointer px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                             >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleSubmit}
-                                className="px-5 py-2 bg-orange-400 hover:bg-orange-500 text-white rounded-lg transition-colors"
-                            >
-                                Create
-                            </button>
+                                <option value="New">New</option>
+                                <option value="In-Transit">In-Transit</option>
+                                <option value="Delivered">Delivered</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
                         </div>
-                    </motion.div>
-                </motion.div>
-            )}
-        </AnimatePresence>
+
+                        <div className="bg-gray-50 p-4 rounded-lg flex items-center justify-between">
+                            <span className="text-sm font-medium text-gray-700">Estimated Cost</span>
+                            <span className="text-2xl font-bold text-gray-800">${form.cost.toFixed(2)}</span>
+                        </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
+                        <button
+                            onClick={onClose}
+                            className="px-6 py-2 text-gray-700 bg-gray-100 border cursor-pointer border-gray-300 rounded-lg hover:bg-gray-200 transition-colors"
+                            disabled={isSubmitting}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleSubmit}
+                            disabled={isSubmitting}
+                            className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <SplineIcon className="animate-spin h-4 w-4 mr-2" />
+                                    <span>Creating...</span>
+                                </>
+                            ) : (
+                                <span>Create Shipment</span>
+                            )}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 };
 
 export default CreateShipmentModal;
+
+// Animation style
+const style = document.createElement("style");
+style.innerHTML = `
+    @keyframes scaleIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    .animate-scaleIn {
+        animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+`;
+document.head.appendChild(style);

@@ -43,7 +43,7 @@ const DashboardNavbar = ({ username = "John Doe", activeTab, setActiveTab }) => 
                         <motion.button
                             key={item.name}
                             onClick={() => setActiveTab(item.name)}
-                            className={`relative px-6 py-2.5 rounded-xl font-medium transition-all duration-300 text-sm
+                            className={`relative cursor-pointer px-6 py-2.5 rounded-xl font-medium transition-all duration-300 text-sm
                                 ${activeTab === item.name
                                     ? "text-gray-900 bg-orange-200/30 shadow-inner"
                                     : "text-gray-600 hover:text-gray-900 hover:bg-gray-100/50"
@@ -77,6 +77,7 @@ const DashboardNavbar = ({ username = "John Doe", activeTab, setActiveTab }) => 
                         </div>
                         <motion.div
                             whileHover={{ scale: 1.2 }}
+                            className='cursor-pointer'
                         >
                             <span><LogOut /></span>
                         </motion.div>

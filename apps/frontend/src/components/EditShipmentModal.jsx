@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { X as Cross, Ship as ShipIcon, Loader2 as SplineIcon } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
+import { BACKEND_URL } from "../config/config";
+import { toast } from 'react-toastify';
 
 const EditShipmentModal = ({ isOpen, onClose, onSave, shipment }) => {
     const [form, setForm] = useState({
@@ -61,12 +63,50 @@ const EditShipmentModal = ({ isOpen, onClose, onSave, shipment }) => {
 
     const handleSubmit = async () => {
         if (!validateForm()) return;
-        setIsSubmitting(true);
-        await new Promise((resolve) => setTimeout(resolve, 800));
-        if (onSave) onSave({ ...form, id: shipment?.id });
-        setIsSubmitting(false);
-        onClose();
+
+        try {
+            setIsSubmitting(true);
+
+            const token = localStorage.getItem("token");
+
+            const response = await fetch(`${BACKEND_URL}/shipment/${shipment.id}`, {
+                method: "PATCH", // Update request
+                headers: {
+                    "Content-Type": "application/json",
+                    "authorization": token,
+                },
+                body: JSON.stringify({
+                    title: form.title,
+                    status: form.status.toUpperCase(),
+                    fragile: form.fragile === "Yes" ? "true" : "false",
+                    weightKg: form.weight,
+                    distanceKm: form.distance,
+                    baseRate: form.baseRate,
+                    createdBy: shipment.createdBy, // preserve creator
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to update shipment: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // Let parent update UI
+            if (onSave) onSave(data);
+
+            onClose();
+            toast.success("Saved the Changes!!");
+            navigate("/myshipments");
+
+        } catch (error) {
+            console.error("Error updating shipment:", error);
+            toast.warning("Failed to update shipment. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
+
 
     if (!isOpen) return null;
 

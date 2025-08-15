@@ -4,6 +4,7 @@ import ShipmentsTable from "./ShipmentsTable";
 import Pagination from "./Pagination";
 import CreateShipmentModal from "./CreateShipmentModal";
 import DashboardNavbar from "./DashboardNavbar";
+import EditShipmentModal from "./EditShipmentModal";
 
 const STATUS_OPTIONS = ["NEW", "IN_TRANSIT", "DELIVERED", "CANCELLED"];
 
@@ -55,18 +56,30 @@ export default function MyShipments() {
             createdAt: "2025-08-08",
         },
     ]);
-
+    const [shipmentToEdit, setShipmentToEdit] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedStatus, setSelectedStatus] = useState("");
     const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-    const handleEditShipment = (id) => console.log("Edit shipment", id);
     const handleDeleteShipment = (id) =>
         setShipments((prev) => prev.filter((s) => s.id !== id));
 
     const clearFilters = () => {
         setSearchTerm("");
         setSelectedStatus("");
+    };
+
+    const handleEditShipment = (id) => {
+        const ship = shipments.find((s) => s.id === id);
+        setShipmentToEdit(ship);
+        setIsEditModalOpen(true);
+    };
+
+    const handleSaveEditedShipment = (updated) => {
+        setShipments((prev) =>
+            prev.map((s) => (s.id === updated.id ? { ...s, ...updated, fragile: updated.fragile === "Yes" } : s))
+        );
     };
 
     const filteredShipments = useMemo(() => {
@@ -231,6 +244,13 @@ export default function MyShipments() {
                     onClose={() => setIsCreateModalOpen(false)}
                     onCreate={() => setIsCreateModalOpen(false)}
                     setActiveTab={setActiveTab}
+                />
+                {/* Modal for Edit */}
+                <EditShipmentModal
+                    isOpen={isEditModalOpen}
+                    onClose={() => setIsEditModalOpen(false)}
+                    onSave={handleSaveEditedShipment}
+                    shipment={shipmentToEdit}
                 />
             </div>
         </div>

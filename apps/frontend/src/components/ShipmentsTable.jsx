@@ -162,7 +162,7 @@ export default function ShipmentsTable({ shipments, onEdit, onDelete }) {
                                         <td className="px-6 py-5 whitespace-nowrap">
                                             <div className="flex items-center justify-center gap-2">
                                                 <button
-                                                    onClick={() => onEdit && onEdit(shipment)}
+                                                    onClick={() => onEdit && onEdit(shipment.id)}
                                                     className="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 rounded-lg text-sm font-medium 
                                                     cursor-pointer
                                                     transition-all duration-200 hover:shadow-sm"

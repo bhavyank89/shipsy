@@ -11,63 +11,67 @@ import DeleteConfirmationModal from "./DeleteConfirmationModal";
 
 const STATUS_OPTIONS = ["NEW", "IN_TRANSIT", "DELIVERED", "CANCELLED"];
 
+// Loading Skeleton Components
+const SkeletonRow = () => (
+    <div className="bg-white border-b border-gray-100 animate-pulse">
+        <div className="px-6 py-4 flex items-center justify-between">
+            <div className="flex-1 space-y-2">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+            </div>
+            <div className="flex items-center gap-4">
+                <div className="h-6 bg-gray-200 rounded-full w-16"></div>
+                <div className="h-4 bg-gray-200 rounded w-20"></div>
+                <div className="h-4 bg-gray-200 rounded w-16"></div>
+                <div className="flex gap-2">
+                    <div className="h-8 w-8 bg-gray-200 rounded"></div>
+                    <div className="h-8 w-8 bg-gray-200 rounded"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+);
+
+const SkeletonTable = () => (
+    <div className="bg-white rounded-2xl shadow-md overflow-hidden mb-6">
+        {/* Table Header Skeleton */}
+        <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+            <div className="grid grid-cols-7 gap-4">
+                {Array.from({ length: 7 }).map((_, i) => (
+                    <div key={i} className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                ))}
+            </div>
+        </div>
+
+        {/* Table Rows Skeleton */}
+        {Array.from({ length: 3 }).map((_, i) => (
+            <SkeletonRow key={i} />
+        ))}
+    </div>
+);
+
+const FilterSkeleton = () => (
+    <div className="bg-white rounded-2xl shadow-md p-6 mb-6 animate-pulse">
+        <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex-1 h-12 bg-gray-200 rounded-xl"></div>
+            <div className="h-12 w-40 bg-gray-200 rounded-xl"></div>
+        </div>
+    </div>
+);
+
 export default function MyShipments() {
     // State to control modal visibility & selected shipment
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [shipmentToDelete, setShipmentToDelete] = useState(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [shipments, setShipments] = useState([
-        {
-            id: "SH001",
-            title: "Extremely Long Shipment Title That Should Be Truncated With Ellipsis",
-            fragile: true,
-            status: "NEW",
-            weight: 12.5,
-            distance: 350,
-            basePrice: 150.0,
-            cost: 175.0,
-            createdAt: "2025-08-14",
-        },
-        {
-            id: "SH002",
-            title: "Auto Parts Shipment",
-            fragile: false,
-            status: "IN_TRANSIT",
-            weight: 80,
-            distance: 1200,
-            basePrice: 500,
-            cost: 550,
-            createdAt: "2025-08-12",
-        },
-        {
-            id: "SH003",
-            title: "Furniture Set",
-            fragile: false,
-            status: "DELIVERED",
-            weight: 200,
-            distance: 800,
-            basePrice: 800,
-            cost: 900,
-            createdAt: "2025-08-10",
-        },
-        {
-            id: "SH004",
-            title: "Office Supplies",
-            fragile: true,
-            status: "CANCELLED",
-            weight: 30,
-            distance: 150,
-            basePrice: 100,
-            cost: 0,
-            createdAt: "2025-08-08",
-        },
-    ]);
+    const [shipments, setShipments] = useState([]);
     const [shipmentToEdit, setShipmentToEdit] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedStatus, setSelectedStatus] = useState("");
     const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [username, setUsername] = useState(null);
+    const [isLoading, setIsLoading] = useState(true); // Add loading state
 
     // Open the modal
     const openDeleteModal = (id) => {
@@ -152,6 +156,7 @@ export default function MyShipments() {
 
     useEffect(() => {
         const fetchData = async () => {
+            setIsLoading(true); // Start loading
             const token = localStorage.getItem("token");
 
             try {
@@ -205,6 +210,9 @@ export default function MyShipments() {
                 setShipments(normalized);
             } catch (error) {
                 console.error("Error fetching shipments:", error);
+                toast.error("Failed to load shipments. Please refresh the page.");
+            } finally {
+                setIsLoading(false); // End loading
             }
         };
 
@@ -229,111 +237,130 @@ export default function MyShipments() {
                     </h2>
                     <button
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="bg-gradient-to-r from-orange-400 to-pink-500 hover:from-orange-500 hover:to-pink-600 text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2 shadow-lg hover:shadow-xl transition-all cursor-pointer duration-200 transform hover:scale-105"
+                        disabled={isLoading}
+                        className="bg-gradient-to-r from-orange-400 to-pink-500 hover:from-orange-500 hover:to-pink-600 text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2 shadow-lg hover:shadow-xl transition-all cursor-pointer duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                     >
                         <Plus className="w-5 h-5" />
                         Create Shipment
                     </button>
                 </div>
 
-                {/* Filter Bar */}
-                <div className="bg-white rounded-2xl shadow-md p-6 mb-6">
-                    <div className="flex flex-col lg:flex-row gap-4">
-                        {/* Search */}
-                        <div className="relative flex-1">
-                            <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Search by title, creator, ID, or status..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-800 placeholder-gray-500 text-sm w-full transition-all"
-                            />
-                        </div>
-
-                        {/* Status Dropdown */}
-                        <div className="relative">
-                            <button
-                                onClick={() =>
-                                    setIsStatusDropdownOpen(!isStatusDropdownOpen)
-                                }
-                                className="flex items-center justify-between gap-3 px-4 py-3 bg-gray-50 cursor-pointer border border-gray-200 rounded-xl hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm font-medium text-gray-700 min-w-[160px] transition-all"
-                            >
-                                {selectedStatus || "All Statuses"}
-                                <ChevronDown
-                                    className={`w-4 h-4 transition-transform ${isStatusDropdownOpen ? "rotate-180" : ""
-                                        }`}
-                                />
-                            </button>
-                            {isStatusDropdownOpen && (
-                                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-10">
-                                    <button
-                                        onClick={() => {
-                                            setSelectedStatus("");
-                                            setIsStatusDropdownOpen(false);
-                                        }}
-                                        className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors first:rounded-t-xl"
-                                    >
-                                        All Statuses
-                                    </button>
-                                    {STATUS_OPTIONS.map((status) => (
-                                        <button
-                                            key={status}
-                                            onClick={() => {
-                                                setSelectedStatus(status);
-                                                setIsStatusDropdownOpen(false);
-                                            }}
-                                            className={`w-full text-left px-4 py-3 text-sm cursor-pointer transition-colors hover:bg-gray-50 last:rounded-b-xl ${selectedStatus === status
-                                                ? "bg-orange-50 text-orange-700 font-medium"
-                                                : "text-gray-700"
-                                                }`}
-                                        >
-                                            {status}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Clear Filters */}
-                        {hasActiveFilters && (
-                            <button
-                                onClick={clearFilters}
-                                className="flex cursor-pointer items-center gap-2 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-medium transition-colors"
-                            >
-                                <X className="w-4 h-4" />
-                                Clear Filters
-                            </button>
-                        )}
-                    </div>
-                </div>
-
-                {/* Table */}
-                {filteredShipments.length > 0 ? (
+                {/* Loading State */}
+                {isLoading ? (
                     <>
-                        <ShipmentsTable
-                            shipments={paginatedShipments}
-                            onEdit={handleEditShipment}
-                            onDelete={openDeleteModal}
-                        />
-                        <Pagination
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            setCurrentPage={setCurrentPage}
-                        />
+                        <FilterSkeleton />
+                        <SkeletonTable />
+                        {/* Pagination Skeleton */}
+                        <div className="flex justify-center items-center gap-2 mt-6">
+                            <div className="h-10 w-20 bg-gray-200 rounded animate-pulse"></div>
+                            <div className="h-10 w-10 bg-gray-200 rounded animate-pulse"></div>
+                            <div className="h-10 w-10 bg-gray-200 rounded animate-pulse"></div>
+                            <div className="h-10 w-10 bg-gray-200 rounded animate-pulse"></div>
+                            <div className="h-10 w-20 bg-gray-200 rounded animate-pulse"></div>
+                        </div>
                     </>
                 ) : (
-                    <div className="bg-white rounded-2xl shadow-md p-12 text-center">
-                        <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            No shipments found
-                        </h3>
-                        <p className="text-gray-500 mb-6">
-                            {hasActiveFilters
-                                ? "Try adjusting your search terms or filters."
-                                : "Create your first shipment to get started."}
-                        </p>
-                    </div>
+                    <>
+                        {/* Filter Bar */}
+                        <div className="bg-white rounded-2xl shadow-md p-6 mb-6">
+                            <div className="flex flex-col lg:flex-row gap-4">
+                                {/* Search */}
+                                <div className="relative flex-1">
+                                    <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search by title, creator, ID, or status..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-800 placeholder-gray-500 text-sm w-full transition-all"
+                                    />
+                                </div>
+
+                                {/* Status Dropdown */}
+                                <div className="relative">
+                                    <button
+                                        onClick={() =>
+                                            setIsStatusDropdownOpen(!isStatusDropdownOpen)
+                                        }
+                                        className="flex items-center justify-between gap-3 px-4 py-3 bg-gray-50 cursor-pointer border border-gray-200 rounded-xl hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm font-medium text-gray-700 min-w-[160px] transition-all"
+                                    >
+                                        {selectedStatus || "All Statuses"}
+                                        <ChevronDown
+                                            className={`w-4 h-4 transition-transform ${isStatusDropdownOpen ? "rotate-180" : ""
+                                                }`}
+                                        />
+                                    </button>
+                                    {isStatusDropdownOpen && (
+                                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-10">
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedStatus("");
+                                                    setIsStatusDropdownOpen(false);
+                                                }}
+                                                className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors first:rounded-t-xl"
+                                            >
+                                                All Statuses
+                                            </button>
+                                            {STATUS_OPTIONS.map((status) => (
+                                                <button
+                                                    key={status}
+                                                    onClick={() => {
+                                                        setSelectedStatus(status);
+                                                        setIsStatusDropdownOpen(false);
+                                                    }}
+                                                    className={`w-full text-left px-4 py-3 text-sm cursor-pointer transition-colors hover:bg-gray-50 last:rounded-b-xl ${selectedStatus === status
+                                                        ? "bg-orange-50 text-orange-700 font-medium"
+                                                        : "text-gray-700"
+                                                        }`}
+                                                >
+                                                    {status}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Clear Filters */}
+                                {hasActiveFilters && (
+                                    <button
+                                        onClick={clearFilters}
+                                        className="flex cursor-pointer items-center gap-2 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-medium transition-colors"
+                                    >
+                                        <X className="w-4 h-4" />
+                                        Clear Filters
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Table */}
+                        {filteredShipments.length > 0 ? (
+                            <>
+                                <ShipmentsTable
+                                    shipments={paginatedShipments}
+                                    onEdit={handleEditShipment}
+                                    onDelete={openDeleteModal}
+                                />
+                                <Pagination
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    setCurrentPage={setCurrentPage}
+                                />
+                            </>
+                        ) : (
+                            <div className="bg-white rounded-2xl shadow-md p-12 text-center">
+                                <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                    No shipments found
+                                </h3>
+                                <p className="text-gray-500 mb-6">
+                                    {hasActiveFilters
+                                        ? "Try adjusting your search terms or filters."
+                                        : "Create your first shipment to get started."}
+                                </p>
+                            </div>
+                        )}
+                    </>
                 )}
 
                 {/* Modals */}

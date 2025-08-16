@@ -325,6 +325,7 @@ export default function AllShipments() {
                             shipments={paginatedShipments}
                             onEdit={handleEditShipment}
                             onDelete={handleDeleteShipment}
+                            myshipment={false}
                         />
                         <Pagination
                             currentPage={currentPage}

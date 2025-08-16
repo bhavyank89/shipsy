@@ -55,7 +55,7 @@ const getFragileBadge = (fragile) => {
 const formatCurrency = (value) =>
     new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
 
-export default function ShipmentsTable({ shipments, onEdit, onDelete }) {
+export default function ShipmentsTable({ shipments, onEdit, onDelete, myshipment }) {
     return (
         <div className="p-6 bg-gray-50">
             <div className="max-w-full">
@@ -73,7 +73,7 @@ export default function ShipmentsTable({ shipments, onEdit, onDelete }) {
                                     <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900 tracking-wider min-w-[200px]">
                                         Title
                                     </th>
-                                    {shipments?.some(s => s.createdBy) && (
+                                    {!myshipment && (
                                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 tracking-wider min-w-[140px]">
                                             Created By
                                         </th>
@@ -101,9 +101,9 @@ export default function ShipmentsTable({ shipments, onEdit, onDelete }) {
                                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 tracking-wider">
                                         Created
                                     </th>
-                                    <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900 tracking-wider min-w-[120px]">
+                                    {myshipment && (<th className="px-6 py-4 text-center text-sm font-semibold text-gray-900 tracking-wider min-w-[120px]">
                                         Actions
-                                    </th>
+                                    </th>)}
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -125,7 +125,7 @@ export default function ShipmentsTable({ shipments, onEdit, onDelete }) {
                                                 </p>
                                             </div>
                                         </td>
-                                        {shipments?.some(s => s.createdBy) && (
+                                        {!myshipment && (
                                             <td className="px-6 py-5 whitespace-nowrap">
                                                 <span className="text-sm text-gray-900 font-medium">
                                                     {shipment.createdBy || "-"}
@@ -159,7 +159,7 @@ export default function ShipmentsTable({ shipments, onEdit, onDelete }) {
                                                 })}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-5 whitespace-nowrap">
+                                        {myshipment && (<td className="px-6 py-5 whitespace-nowrap">
                                             <div className="flex items-center justify-center gap-2">
                                                 <button
                                                     onClick={() => onEdit && onEdit(shipment.id)}
@@ -178,7 +178,7 @@ export default function ShipmentsTable({ shipments, onEdit, onDelete }) {
                                                     Delete
                                                 </button>
                                             </div>
-                                        </td>
+                                        </td>)}
                                     </motion.tr>
                                 ))}
                             </tbody>

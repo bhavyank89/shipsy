@@ -369,6 +369,7 @@ export default function MyShipments() {
                                     shipments={paginatedShipments}
                                     onEdit={handleEditShipment}
                                     onDelete={openDeleteModal}
+                                    myshipment={true}
                                 />
                                 <Pagination
                                     currentPage={currentPage}

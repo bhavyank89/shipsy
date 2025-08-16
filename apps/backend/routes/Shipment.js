@@ -15,24 +15,57 @@ router.use(auth);
  * - status, fragile, search
  * - sort: field:asc|desc
  */
+// router.get("/", async (req, res) => {
+//     try {
+//         const {
+//             page = 1,
+//             limit = 5,
+//             status,
+//             fragile,
+//             search,
+//             sort = "createdAt:desc",
+//         } = req.query;
+
+//         const query = {};
+//         if (status) query.status = status;
+//         if (fragile) query.fragile = fragile === "true";
+//         if (search) query.title = { $regex: search, $options: "i" };
+
+//         const skip = (Number(page) - 1) * Number(limit);
+//         const total = await Shipment.countDocuments(query);
+
+//         // Sorting
+//         let sortObj = {};
+//         if (sort) {
+//             const [field, dir] = sort.split(":");
+//             sortObj[field] = dir === "asc" ? 1 : -1;
+//         }
+
+//         const shipments = await Shipment.find(query)
+//             .sort(sortObj)
+//             .skip(skip)
+//             .limit(Number(limit));
+
+//         res.json({
+//             data: shipments,
+//             total,
+//             page: Number(page),
+//             totalPages: Math.ceil(total / limit),
+//         });
+//     } catch (err) {
+//         console.error("Error fetching shipments:", err);
+//         res.status(500).json({ message: err.message });
+//     }
+// });
+
 router.get("/", async (req, res) => {
     try {
-        const {
-            page = 1,
-            limit = 5,
-            status,
-            fragile,
-            search,
-            sort = "createdAt:desc",
-        } = req.query;
+        const { status, fragile, search, sort = "createdAt:desc" } = req.query;
 
         const query = {};
         if (status) query.status = status;
         if (fragile) query.fragile = fragile === "true";
         if (search) query.title = { $regex: search, $options: "i" };
-
-        const skip = (Number(page) - 1) * Number(limit);
-        const total = await Shipment.countDocuments(query);
 
         // Sorting
         let sortObj = {};
@@ -41,16 +74,12 @@ router.get("/", async (req, res) => {
             sortObj[field] = dir === "asc" ? 1 : -1;
         }
 
-        const shipments = await Shipment.find(query)
-            .sort(sortObj)
-            .skip(skip)
-            .limit(Number(limit));
+        // Fetch all shipments matching the query
+        const shipments = await Shipment.find(query).sort(sortObj);
 
         res.json({
             data: shipments,
-            total,
-            page: Number(page),
-            totalPages: Math.ceil(total / limit),
+            total: shipments.length
         });
     } catch (err) {
         console.error("Error fetching shipments:", err);
@@ -58,14 +87,31 @@ router.get("/", async (req, res) => {
     }
 });
 
+
 /**
  * ✅ GET /shipments/my
  * Fetch all shipments created by the logged-in user
  */
+// router.get("/my", async (req, res) => {
+//     try {
+//         const shipments = await Shipment.find({ "createdBy._id": req.user.id })
+//             .sort({ createdAt: -1 });
+
+//         res.json({
+//             data: shipments,
+//             total: shipments.length
+//         });
+//     } catch (err) {
+//         console.error("Error fetching user's shipments:", err);
+//         res.status(500).json({ message: err.message });
+//     }
+// });
+
 router.get("/my", async (req, res) => {
     try {
+        // Fetch all shipments created by the logged-in user
         const shipments = await Shipment.find({ "createdBy._id": req.user.id })
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 }); // newest first
 
         res.json({
             data: shipments,
@@ -76,6 +122,7 @@ router.get("/my", async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
+
 
 /**
  * GET /shipments/:id

@@ -72,6 +72,8 @@ export default function MyShipments() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [username, setUsername] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
 
     // Extract fetchShipments into a separate function that can be called multiple times
     const fetchShipments = useCallback(async () => {
@@ -126,6 +128,7 @@ export default function MyShipments() {
                 }));
 
             setShipments(normalized);
+            console.log(shipmentData);
         } catch (error) {
             console.error("Error fetching shipments:", error);
             toast.error("Failed to load shipments. Please refresh the page.");
@@ -170,6 +173,7 @@ export default function MyShipments() {
     const clearFilters = () => {
         setSearchTerm("");
         setSelectedStatus("");
+        setCurrentPage(1); // Reset to first page when clearing filters
     };
 
     const handleEditShipment = (id) => {
@@ -208,6 +212,7 @@ export default function MyShipments() {
         toast.success("Shipment created successfully!");
     };
 
+    // Filter shipments based on search and status
     const filteredShipments = useMemo(() => {
         return shipments.filter((shipment) => {
             const matchesSearch =
@@ -224,18 +229,37 @@ export default function MyShipments() {
         });
     }, [shipments, searchTerm, selectedStatus]);
 
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 5;
+    // Calculate total pages and ensure current page is valid
+    const totalPages = Math.ceil(filteredShipments.length / itemsPerPage);
 
+    // Reset to page 1 when filters change and current page becomes invalid
+    useEffect(() => {
+        if (currentPage > totalPages && totalPages > 0) {
+            setCurrentPage(1);
+        }
+    }, [filteredShipments.length, totalPages, currentPage]);
+
+    // Reset to page 1 when search term or status filter changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, selectedStatus]);
+
+    // Calculate paginated shipments
     const paginatedShipments = useMemo(() => {
         const startIndex = (currentPage - 1) * itemsPerPage;
         return filteredShipments.slice(startIndex, startIndex + itemsPerPage);
-    }, [filteredShipments, currentPage]);
+    }, [filteredShipments, currentPage, itemsPerPage]);
 
-    const totalPages = Math.ceil(filteredShipments.length / itemsPerPage);
     const [activeTab, setActiveTab] = useState("MyShipments");
 
     const hasActiveFilters = searchTerm !== "" || selectedStatus !== "";
+
+    // Handle page change
+    const handlePageChange = useCallback((page) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    }, [totalPages]);
 
     // Initial data fetch
     useEffect(() => {
@@ -362,6 +386,13 @@ export default function MyShipments() {
                             </div>
                         </div>
 
+                        {/* Results Info */}
+                        {filteredShipments.length > 0 && (
+                            <div className="mb-4 text-sm text-gray-600">
+                                Showing {Math.min((currentPage - 1) * itemsPerPage + 1, filteredShipments.length)}-{Math.min(currentPage * itemsPerPage, filteredShipments.length)} of {filteredShipments.length} shipments
+                            </div>
+                        )}
+
                         {/* Table */}
                         {filteredShipments.length > 0 ? (
                             <>
@@ -371,11 +402,13 @@ export default function MyShipments() {
                                     onDelete={openDeleteModal}
                                     myshipment={true}
                                 />
-                                <Pagination
-                                    currentPage={currentPage}
-                                    totalPages={totalPages}
-                                    setCurrentPage={setCurrentPage}
-                                />
+                                {totalPages > 1 && (
+                                    <Pagination
+                                        currentPage={currentPage}
+                                        totalPages={totalPages}
+                                        setCurrentPage={handlePageChange}
+                                    />
+                                )}
                             </>
                         ) : (
                             <div className="bg-white rounded-2xl shadow-md p-12 text-center">

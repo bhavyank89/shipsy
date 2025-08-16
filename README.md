@@ -170,16 +170,19 @@ npm run dev
 ## 🖼️ Screenshots
 
 ### Landing Page
-*Modern, responsive landing page with call-to-action*
+![Landing Page](images/landing.png)
 
-### Dashboard
-*Interactive dashboard with shipment statistics and quick actions*
+### Login
+![Login/Signup](images/login.png)
 
-### Shipment Management
-*Comprehensive shipment list with filtering, sorting, and pagination*
+### Shipment Dashboard
+![Login/Signup](images/dashboard.png)
 
-### Create/Edit Shipment
-*User-friendly forms with validation and real-time cost calculation*
+### My Shipment
+![myshipment](images/myshipment.png)
+
+### All Shipment
+![allshipment](images/allshipment.png)
 
 ## 📖 Documentation
 
@@ -241,9 +244,8 @@ VITE_SERVER_URL=http://localhost:3000
 2. Set all required environment variables
 3. Deploy automatically on push to main branch
 
-## 👨‍💻 Author
+## 👨‍💻 Connect with Author
 
-**Your Name**
 - GitHub: [@bhavyank89](https://github.com/bhavyank89)
 - LinkedIn: [Your LinkedIn](https://linkedin.com/in/bhavyank89)
 

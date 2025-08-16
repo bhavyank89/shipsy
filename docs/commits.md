@@ -100,10 +100,11 @@ Shipsy is a shipment management application built with a modern tech stack, feat
 
 ## Git Log Data
 
-<!-- Space for Git log visualization image -->
+![gitlog](images/gitlog.png)
 
 ---
 
 ## Github Commit Map
 
-<!-- Space for Github commit map visualization image -->
+![commit1](images/commit1.png)
+![commit2](images/commit2.png)

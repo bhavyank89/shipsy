@@ -6,6 +6,7 @@
 
 - **Frontend**: [https://shipsydev.vercel.app/](https://shipsydev.vercel.app/)
 - **Backend API**: [https://shipsy-fouh.onrender.com/](https://shipsy-fouh.onrender.com/)
+- **Postman Documentation**: [https://documenter.getpostman.com/view/32517231/2sB3BHkU9W](https://documenter.getpostman.com/view/32517231/2sB3BHkU9W)
 ## ✨ Features
 
 - 🔐 **JWT-based Authentication** - Secure login/signup system
@@ -95,6 +96,7 @@ shipsy/
     ├── architecture.md         # System architecture
     ├── commits.md             # Commit history
     └── ai-usage.md            # AI usage documentation
+    └── Sipsy.postman_collection.json  # Postman API documentation
 ```
 
 ## 🛠️ Installation & Setup
@@ -184,6 +186,7 @@ npm run dev
 - 🏗️ **[System Architecture](docs/architecture.md)** - Detailed system design and data flow
 - 📝 **[Commit History](docs/commits.md)** - Complete development timeline
 - 🤖 **[AI Usage Documentation](docs/ai-usage.md)** - How AI assisted in development
+- 📭 **[Postman API Documentation](docs/Sipsy.postman_collection.json)** - Postman Documentation
 
 ## 🤝 Contributing
 

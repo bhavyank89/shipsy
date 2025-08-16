@@ -118,7 +118,7 @@ export default function AllShipments() {
     }, [shipments, searchTerm, selectedStatus]);
 
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 3;
+    const itemsPerPage = 5;
 
     const paginatedShipments = useMemo(() => {
         const startIndex = (currentPage - 1) * itemsPerPage;

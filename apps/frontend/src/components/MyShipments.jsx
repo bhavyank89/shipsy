@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { Plus, Package, Search, X, ChevronDown } from "lucide-react";
 import ShipmentsTable from "./ShipmentsTable";
 import Pagination from "./Pagination";
@@ -71,7 +71,66 @@ export default function MyShipments() {
     const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [username, setUsername] = useState(null);
-    const [isLoading, setIsLoading] = useState(true); // Add loading state
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Extract fetchShipments into a separate function that can be called multiple times
+    const fetchShipments = useCallback(async () => {
+        const token = localStorage.getItem("token");
+
+        try {
+            // Step 1: Get logged-in user info
+            const userRes = await fetch(`${BACKEND_URL}/auth/fetch/`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    authorization: token,
+                },
+            });
+
+            if (!userRes.ok) {
+                throw new Error(`User fetch failed! Status: ${userRes.status}`);
+            }
+
+            const userData = await userRes.json();
+            setUsername(userData.username);
+
+            // Step 2: Get all shipments
+            const shipmentRes = await fetch(`${BACKEND_URL}/shipment/`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    authorization: token,
+                },
+            });
+
+            if (!shipmentRes.ok) {
+                throw new Error(`Shipments fetch failed! Status: ${shipmentRes.status}`);
+            }
+
+            const shipmentData = await shipmentRes.json();
+
+            // Step 3: Filter by logged-in user
+            const normalized = (shipmentData.data || [])
+                .filter(s => s.createdBy?.username === userData.username)
+                .map(s => ({
+                    id: s._id,
+                    title: s.title,
+                    createdBy: s.createdBy?.username || "Unknown",
+                    fragile: s.fragile,
+                    status: s.status,
+                    weight: s.weightKg,
+                    distance: s.distanceKm,
+                    basePrice: s.baseRate,
+                    cost: s.cost,
+                    createdAt: s.createdAt,
+                }));
+
+            setShipments(normalized);
+        } catch (error) {
+            console.error("Error fetching shipments:", error);
+            toast.error("Failed to load shipments. Please refresh the page.");
+        }
+    }, []);
 
     // Open the modal
     const openDeleteModal = (id) => {
@@ -119,10 +178,34 @@ export default function MyShipments() {
         setIsEditModalOpen(true);
     };
 
-    const handleSaveEditedShipment = (updated) => {
-        setShipments((prev) =>
-            prev.map((s) => (s.id === updated.id ? { ...s, ...updated, fragile: updated.fragile === "Yes" } : s))
-        );
+    const handleSaveEditedShipment = async (updated) => {
+        try {
+            // Close the modal first
+            setIsEditModalOpen(false);
+
+            // Re-fetch shipments to get the latest data from the server
+            await fetchShipments();
+
+            // Show success message
+            toast.success("Shipment updated successfully!");
+        } catch (error) {
+            console.error("Error refreshing shipments:", error);
+
+            // Fallback: update local state if re-fetch fails
+            setShipments((prev) =>
+                prev.map((s) => (s.id === updated.id ? { ...s, ...updated, fragile: updated.fragile === "Yes" } : s))
+            );
+
+            toast.success("Shipment updated successfully!");
+        }
+    };
+
+    // Handle successful shipment creation
+    const handleShipmentCreated = async () => {
+        setIsCreateModalOpen(false);
+        // Refresh the shipments list
+        await fetchShipments();
+        toast.success("Shipment created successfully!");
     };
 
     const filteredShipments = useMemo(() => {
@@ -154,70 +237,16 @@ export default function MyShipments() {
 
     const hasActiveFilters = searchTerm !== "" || selectedStatus !== "";
 
+    // Initial data fetch
     useEffect(() => {
         const fetchData = async () => {
-            setIsLoading(true); // Start loading
-            const token = localStorage.getItem("token");
-
-            try {
-                // Step 1: Get logged-in user info
-                const userRes = await fetch(`${BACKEND_URL}/auth/fetch/`, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        authorization: token,
-                    },
-                });
-
-                if (!userRes.ok) {
-                    throw new Error(`User fetch failed! Status: ${userRes.status}`);
-                }
-
-                const userData = await userRes.json();
-                setUsername(userData.username);
-
-                // Step 2: Get all shipments
-                const shipmentRes = await fetch(`${BACKEND_URL}/shipment/`, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        authorization: token,
-                    },
-                });
-
-                if (!shipmentRes.ok) {
-                    throw new Error(`Shipments fetch failed! Status: ${shipmentRes.status}`);
-                }
-
-                const shipmentData = await shipmentRes.json();
-
-                // Step 3: Filter by logged-in user
-                const normalized = (shipmentData.data || [])
-                    .filter(s => s.createdBy?.username === userData.username) // ✅ Only this user's shipments
-                    .map(s => ({
-                        id: s._id,
-                        title: s.title,
-                        createdBy: s.createdBy?.username || "Unknown",
-                        fragile: s.fragile,
-                        status: s.status,
-                        weight: s.weightKg,
-                        distance: s.distanceKm,
-                        basePrice: s.baseRate,
-                        cost: s.cost,
-                        createdAt: s.createdAt,
-                    }));
-
-                setShipments(normalized);
-            } catch (error) {
-                console.error("Error fetching shipments:", error);
-                toast.error("Failed to load shipments. Please refresh the page.");
-            } finally {
-                setIsLoading(false); // End loading
-            }
+            setIsLoading(true);
+            await fetchShipments();
+            setIsLoading(false);
         };
 
         fetchData();
-    }, []);
+    }, [fetchShipments]);
 
     return (
         <div className="min-h-screen text-gray-800 overflow-hidden relative bg-[#FFFFFF]">
@@ -367,7 +396,7 @@ export default function MyShipments() {
                 <CreateShipmentModal
                     isOpen={isCreateModalOpen}
                     onClose={() => setIsCreateModalOpen(false)}
-                    onCreate={() => setIsCreateModalOpen(false)}
+                    onCreate={handleShipmentCreated}
                     setActiveTab={setActiveTab}
                 />
 

@@ -7,58 +7,87 @@ import { BACKEND_URL } from "../config/config";
 
 const STATUS_OPTIONS = ["NEW", "IN_TRANSIT", "DELIVERED", "CANCELLED"];
 
-export default function AllShipments() {
-    const [shipments, setShipments] = useState([
-        {
-            id: "SH001",
-            title: "Extremely Long Shipment Title That Should Be Truncated With Ellipsis",
-            createdBy: "Alice",
-            fragile: true,
-            status: "NEW",
-            weight: 12.5,
-            distance: 350,
-            basePrice: 150.0,
-            cost: 175.0,
-            createdAt: "2025-08-14",
-        },
-        {
-            id: "SH002",
-            title: "Auto Parts Shipment",
-            createdBy: "Bob",
-            fragile: false,
-            status: "IN_TRANSIT",
-            weight: 80,
-            distance: 1200,
-            basePrice: 500,
-            cost: 550,
-            createdAt: "2025-08-12",
-        },
-        {
-            id: "SH003",
-            title: "Furniture Set",
-            createdBy: "Charlie",
-            fragile: false,
-            status: "DELIVERED",
-            weight: 200,
-            distance: 800,
-            basePrice: 800,
-            cost: 900,
-            createdAt: "2025-08-10",
-        },
-        {
-            id: "SH004",
-            title: "Office Supplies",
-            createdBy: "Diana",
-            fragile: true,
-            status: "CANCELLED",
-            weight: 30,
-            distance: 150,
-            basePrice: 100,
-            cost: 0,
-            createdAt: "2025-08-08",
-        },
-    ]);
+// Loading Skeleton Components
+const SkeletonRow = () => (
+    <tr className="border-b border-gray-200">
+        <td className="px-6 py-4">
+            <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+        </td>
+        <td className="px-6 py-4">
+            <div className="space-y-2">
+                <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/2 animate-pulse"></div>
+            </div>
+        </td>
+        <td className="px-6 py-4">
+            <div className="h-6 bg-gray-200 rounded-full w-20 animate-pulse"></div>
+        </td>
+        <td className="px-6 py-4">
+            <div className="h-4 bg-gray-200 rounded w-16 animate-pulse"></div>
+        </td>
+        <td className="px-6 py-4">
+            <div className="h-4 bg-gray-200 rounded w-20 animate-pulse"></div>
+        </td>
+        <td className="px-6 py-4">
+            <div className="h-4 bg-gray-200 rounded w-16 animate-pulse"></div>
+        </td>
+        <td className="px-6 py-4">
+            <div className="h-4 bg-gray-200 rounded w-20 animate-pulse"></div>
+        </td>
+        <td className="px-6 py-4">
+            <div className="flex gap-2">
+                <div className="h-8 w-8 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-8 w-8 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+        </td>
+    </tr>
+);
 
+const LoadingSkeleton = () => (
+    <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+        <div className="overflow-x-auto">
+            <table className="w-full">
+                <thead className="bg-gray-50">
+                    <tr>
+                        <th className="px-6 py-4 text-left">
+                            <div className="h-4 bg-gray-200 rounded w-8 animate-pulse"></div>
+                        </th>
+                        <th className="px-6 py-4 text-left">
+                            <div className="h-4 bg-gray-200 rounded w-16 animate-pulse"></div>
+                        </th>
+                        <th className="px-6 py-4 text-left">
+                            <div className="h-4 bg-gray-200 rounded w-12 animate-pulse"></div>
+                        </th>
+                        <th className="px-6 py-4 text-left">
+                            <div className="h-4 bg-gray-200 rounded w-12 animate-pulse"></div>
+                        </th>
+                        <th className="px-6 py-4 text-left">
+                            <div className="h-4 bg-gray-200 rounded w-16 animate-pulse"></div>
+                        </th>
+                        <th className="px-6 py-4 text-left">
+                            <div className="h-4 bg-gray-200 rounded w-8 animate-pulse"></div>
+                        </th>
+                        <th className="px-6 py-4 text-left">
+                            <div className="h-4 bg-gray-200 rounded w-8 animate-pulse"></div>
+                        </th>
+                        <th className="px-6 py-4 text-left">
+                            <div className="h-4 bg-gray-200 rounded w-16 animate-pulse"></div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {[...Array(3)].map((_, index) => (
+                        <SkeletonRow key={index} />
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    </div>
+);
+
+export default function AllShipments() {
+    const [shipments, setShipments] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedStatus, setSelectedStatus] = useState("");
     const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
@@ -104,6 +133,7 @@ export default function AllShipments() {
 
     useEffect(() => {
         const fetchData = async () => {
+            setLoading(true);
             const token = localStorage.getItem("token");
             try {
                 const response = await fetch(`${BACKEND_URL}/shipment/`, {
@@ -135,12 +165,64 @@ export default function AllShipments() {
                 setShipments(normalized);
             } catch (error) {
                 console.error("Error fetching data:", error);
+                // Set fallback data in case of error for demo purposes
+                setShipments([
+                    {
+                        id: "SH001",
+                        title: "Extremely Long Shipment Title That Should Be Truncated With Ellipsis",
+                        createdBy: "Alice",
+                        fragile: true,
+                        status: "NEW",
+                        weight: 12.5,
+                        distance: 350,
+                        basePrice: 150.0,
+                        cost: 175.0,
+                        createdAt: "2025-08-14",
+                    },
+                    {
+                        id: "SH002",
+                        title: "Auto Parts Shipment",
+                        createdBy: "Bob",
+                        fragile: false,
+                        status: "IN_TRANSIT",
+                        weight: 80,
+                        distance: 1200,
+                        basePrice: 500,
+                        cost: 550,
+                        createdAt: "2025-08-12",
+                    },
+                    {
+                        id: "SH003",
+                        title: "Furniture Set",
+                        createdBy: "Charlie",
+                        fragile: false,
+                        status: "DELIVERED",
+                        weight: 200,
+                        distance: 800,
+                        basePrice: 800,
+                        cost: 900,
+                        createdAt: "2025-08-10",
+                    },
+                    {
+                        id: "SH004",
+                        title: "Office Supplies",
+                        createdBy: "Diana",
+                        fragile: true,
+                        status: "CANCELLED",
+                        weight: 30,
+                        distance: 150,
+                        basePrice: 100,
+                        cost: 0,
+                        createdAt: "2025-08-08",
+                    },
+                ]);
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchData();
     }, []);
-
 
     return (
         <div className="min-h-screen text-gray-800 overflow-hidden relative bg-[#FFFFFF]">
@@ -160,7 +242,7 @@ export default function AllShipments() {
                     </h2>
                 </div>
 
-                {/* Filter Bar */}
+                {/* Filter Bar - Disabled during loading */}
                 <div className="bg-white rounded-2xl shadow-md p-6 mb-6">
                     <div className="flex flex-col lg:flex-row gap-4">
                         {/* Search */}
@@ -168,10 +250,11 @@ export default function AllShipments() {
                             <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                             <input
                                 type="text"
-                                placeholder="Search by title, creator, ID, or status..."
+                                placeholder={loading ? "Loading..." : "Search by title, creator, ID, or status..."}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-800 placeholder-gray-500 text-sm w-full transition-all"
+                                disabled={loading}
+                                className="pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-gray-800 placeholder-gray-500 text-sm w-full transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             />
                         </div>
 
@@ -179,9 +262,10 @@ export default function AllShipments() {
                         <div className="relative">
                             <button
                                 onClick={() =>
-                                    setIsStatusDropdownOpen(!isStatusDropdownOpen)
+                                    !loading && setIsStatusDropdownOpen(!isStatusDropdownOpen)
                                 }
-                                className="flex items-center justify-between gap-3 px-4 py-3 bg-gray-50 cursor-pointer border border-gray-200 rounded-xl hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm font-medium text-gray-700 min-w-[160px] transition-all"
+                                disabled={loading}
+                                className="flex items-center justify-between gap-3 px-4 py-3 bg-gray-50 cursor-pointer border border-gray-200 rounded-xl hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm font-medium text-gray-700 min-w-[160px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {selectedStatus || "All Statuses"}
                                 <ChevronDown
@@ -189,7 +273,7 @@ export default function AllShipments() {
                                         }`}
                                 />
                             </button>
-                            {isStatusDropdownOpen && (
+                            {isStatusDropdownOpen && !loading && (
                                 <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-10">
                                     <button
                                         onClick={() => {
@@ -220,7 +304,7 @@ export default function AllShipments() {
                         </div>
 
                         {/* Clear Filters */}
-                        {hasActiveFilters && (
+                        {hasActiveFilters && !loading && (
                             <button
                                 onClick={clearFilters}
                                 className="flex cursor-pointer items-center gap-2 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-medium transition-colors"
@@ -232,8 +316,10 @@ export default function AllShipments() {
                     </div>
                 </div>
 
-                {/* Table */}
-                {filteredShipments.length > 0 ? (
+                {/* Content Area */}
+                {loading ? (
+                    <LoadingSkeleton />
+                ) : filteredShipments.length > 0 ? (
                     <>
                         <ShipmentsTable
                             shipments={paginatedShipments}
@@ -246,7 +332,6 @@ export default function AllShipments() {
                             setCurrentPage={setCurrentPage}
                         />
                     </>
-
                 ) : (
                     <div className="bg-white rounded-2xl shadow-md p-12 text-center">
                         <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />

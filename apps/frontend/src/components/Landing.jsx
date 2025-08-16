@@ -9,6 +9,7 @@ const ShipsyLanding = () => {
     const [isLogin, setIsLogin] = useState(true);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false); 
 
     const navigate = useNavigate();
     const page6 = '/page6.mp4'
@@ -66,10 +67,21 @@ const ShipsyLanding = () => {
         // Reset form fields when modal closes
         setUsername("");
         setPassword("");
+        setIsSubmitting(false);
+    };
+
+    // Modified function to clear inputs when toggling
+    const handleToggleMode = (loginMode) => {
+        setIsLogin(loginMode);
+        // Clear form inputs when switching modes
+        setUsername("");
+        setPassword("");
+        setIsSubmitting(false);
     };
 
     const handleFormSubmit = async (e) => {
         e.preventDefault();
+        setIsSubmitting(true); // Set loading state
 
         // Use the state values directly instead of FormData
         const formValues = {
@@ -104,6 +116,8 @@ const ShipsyLanding = () => {
             } catch (e) {
                 console.error("Error occurred!!", e.message);
                 toast.warning("Error logging in");
+            } finally {
+                setIsSubmitting(false);
             }
         } else {
             // TODO: Replace with actual signup API call
@@ -135,6 +149,8 @@ const ShipsyLanding = () => {
             } catch (e) {
                 console.error("Error occurred!!", e.message);
                 toast.warning("Error creating account");
+            } finally {
+                setIsSubmitting(false);
             }
         }
     };
@@ -277,10 +293,10 @@ const ShipsyLanding = () => {
                                 </p>
                             </div>
 
-                            {/* Toggle Buttons */}
+                            {/* Toggle Buttons - Updated with new onClick handlers */}
                             <div className="flex bg-slate-800/50 rounded-2xl p-1 mb-6">
                                 <button
-                                    onClick={() => setIsLogin(true)}
+                                    onClick={() => handleToggleMode(true)}
                                     className={`flex-1 py-2 px-4 rounded-xl font-medium cursor-pointer transition-all duration-200 ${isLogin
                                         ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg"
                                         : "text-gray-400 hover:text-white"
@@ -289,7 +305,7 @@ const ShipsyLanding = () => {
                                     Login
                                 </button>
                                 <button
-                                    onClick={() => setIsLogin(false)}
+                                    onClick={() => handleToggleMode(false)}
                                     className={`flex-1 py-2 px-4 rounded-xl font-medium cursor-pointer transition-all duration-200 ${!isLogin
                                         ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg"
                                         : "text-gray-400 hover:text-white"
@@ -311,7 +327,8 @@ const ShipsyLanding = () => {
                                         required
                                         value={username}
                                         onChange={(e) => setUsername(e.target.value)}
-                                        className="w-full px-4 py-3 bg-slate-800/50 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-white placeholder-gray-400"
+                                        disabled={isSubmitting}
+                                        className="w-full px-4 py-3 bg-slate-800/50 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-white placeholder-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
                                         placeholder="Enter your username"
                                     />
                                 </div>
@@ -326,25 +343,36 @@ const ShipsyLanding = () => {
                                         required
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full px-4 py-3 bg-slate-800/50 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-white placeholder-gray-400"
+                                        disabled={isSubmitting}
+                                        className="w-full px-4 py-3 bg-slate-800/50 border border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-white placeholder-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
                                         placeholder="Enter your password"
                                     />
                                 </div>
 
+                                {/* Updated submit button with loading state */}
                                 <motion.button
                                     type="submit"
-                                    className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 rounded-xl font-bold shadow-lg hover:shadow-xl cursor-pointer transition-all duration-300 border border-orange-400/20"
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
+                                    disabled={isSubmitting}
+                                    className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 rounded-xl font-bold shadow-lg hover:shadow-xl cursor-pointer transition-all duration-300 border border-orange-400/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    whileHover={!isSubmitting ? { scale: 1.02 } : {}}
+                                    whileTap={!isSubmitting ? { scale: 0.98 } : {}}
                                 >
-                                    {isLogin ? "Sign In" : "Create Account"}
+                                    {isSubmitting && (
+                                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    )}
+                                    {isSubmitting
+                                        ? (isLogin ? "Signing in..." : "Registration...")
+                                        : (isLogin ? "Sign In" : "Create Account")
+                                    }
                                 </motion.button>
                             </form>
                         </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
-
 
             {/* Main Content */}
             <motion.main
@@ -513,25 +541,31 @@ const ShipsyLanding = () => {
             >
                 <div className="flex flex-col lg:flex-row justify-between items-center gap-6 lg:gap-8">
                     <div className="flex flex-wrap justify-center lg:justify-start gap-6 lg:gap-8 text-sm text-gray-300">
-                        <span className="font-semibold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">Made in France</span>
-                        {['Services', 'Benefits', 'Process', 'Plans', 'Contact'].map((item) => (
-                            <motion.a
-                                key={item}
-                                href="#"
-                                className="hover:text-white transition-all duration-300 hover:scale-105 font-medium"
-                                whileHover={{ y: -2 }}
-                            >
-                                {item}
-                            </motion.a>
-                        ))}
+                        <a
+                            href="https://github.com/bhavyank89/shipsy"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-semibold bg-gradient-to-r from-white to-orange-400 bg-clip-text text-transparent hover:underline"
+                        >
+                            Read Docs
+                        </a>
                     </div>
 
                     <motion.div
                         className="text-sm text-gray-300 font-medium"
                         whileHover={{ scale: 1.05 }}
                     >
-                        Created by <span className="bg-gradient-to-r from-white to-orange-400 bg-clip-text text-transparent font-bold">🚀Man</span>
+                        Created by{" "}
+                        <a
+                            href="https://github.com/bhavyank89"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-gradient-to-r from-white to-orange-400 bg-clip-text text-transparent font-bold hover:underline"
+                        >
+                            Bhavyank
+                        </a>
                     </motion.div>
+
                 </div>
             </motion.footer>
         </div>

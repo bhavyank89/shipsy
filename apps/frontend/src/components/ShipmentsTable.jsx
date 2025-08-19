@@ -96,6 +96,9 @@ export default function ShipmentsTable({ shipments, onEdit, onDelete, myshipment
                                         Base Price
                                     </th>
                                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 tracking-wider">
+                                        Weight*Base Price
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 tracking-wider">
                                         Total Cost
                                     </th>
                                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 tracking-wider">
@@ -146,6 +149,9 @@ export default function ShipmentsTable({ shipments, onEdit, onDelete, myshipment
                                         </td>
                                         <td className="px-6 py-5 whitespace-nowrap">
                                             <span className="text-sm font-semibold text-gray-600">{formatCurrency(shipment.basePrice)}</span>
+                                        </td>
+                                        <td className="px-6 py-5 whitespace-nowrap">
+                                            <span className="text-sm font-semibold text-gray-600">{formatCurrency(shipment.basePrice*shipment.weight)}</span>
                                         </td>
                                         <td className="px-6 py-5 whitespace-nowrap">
                                             <span className="text-sm font-bold text-green-600">{formatCurrency(shipment.cost)}</span>
